@@ -1,0 +1,358 @@
+#!/bin/bash
+############################################################################
+# Copyright (C) 2007-2011 Mkhanyisi Madlavana <mmadlavana@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+############################################################################
+
+readonly VER="v3.2.2";
+REMOVE="no";
+OVERWRITE="no";
+CRUSH='no';
+VIAWAV="no";
+KEEPWAV="no";
+GREEN="\033[1;32m";
+RED="\033[1;31m";
+PINK="\033[1;35m";
+BLUE="\033[1;34m";
+NOCOLOR="\033[0m";
+progname=`basename $0`
+
+mklog() {
+LOGFILE="/tmp/ftransc.log";
+printf "$PINK=================================================
+ftransc $VER\n\tlog file:$NOCOLOR $RED $LOGFILE $NOCOLOR
+$PINK=================================================$NOCOLOR\n"
+echo -e "\n===================== ftransc ====================" > $LOGFILE
+DATE="date +[%H:%M:%S] "
+}
+
+check_dependencies() {
+	for program in lame ffmpeg oggenc faac mutagen-inspect fmetadata
+	do
+		if [ "$1" = "check" ]; then
+			printf "$BLUE$program$NOCOLOR... ";
+			FOUND="No";
+			which $program > /dev/null 2>&1 && FOUND="Yes";
+			if [ "$FOUND" = "Yes" ]; then
+				printf "$GREEN installed$NOCOLOR.\n";
+			else
+				printf "$RED not installed$NOCOLOR.\n";
+			fi
+			continue
+		fi
+		echo -n `$DATE` >> $LOGFILE
+		which $program 1>> $LOGFILE 2>&1 ||
+		{ errmsg="________ $program not installed___________";
+			printf "$RED$errmsg$NOCOLOR\n";
+			echo "$errmsg" >> $LOGFILE; }
+	done
+	if [ "$1" = "check" ]; then
+		exit 0;
+	fi
+}
+
+set_quality_presets() {
+	case $QUALITY in
+		insane) 
+			readonly MP3Q='--quiet --cbr -b 320'
+			readonly AACQ='-q 500 -w'
+			readonly OGGQ='--quiet -q 10'
+			readonly WMAQ='-ab 320000 -ac 2 -acodec wmav2'
+			;;
+		high) 
+			readonly MP3Q='--quiet --vbr-new -h'
+			readonly AACQ='-q 200 -w'
+			readonly OGGQ='--quiet -q 6'
+			readonly WMAQ='-ab 192000 -ac 2 -acodec wmav2'
+			;;
+		low)
+			readonly MP3Q='--quiet -q 4 --abr 56'
+			readonly AACQ='-q 50 -w'
+			readonly OGGQ='--quiet -q 1'
+			readonly WMAQ='-ab 56000 -ac 2 -acodec wmav2'
+			;;
+		normal|default|*) 
+			readonly MP3Q='--quiet' 	# LAME defaults: 128kbps CBR
+			readonly AACQ='-w' 		# FAAC defaults: q = 100
+			readonly OGGQ='--quiet'		# oggenc defaults: q = 3
+			readonly WMAQ='-ab 128000 -ac 2 -acodec wmav2'
+			;;
+	esac
+}
+
+get_metadata() {
+	echo -n `$DATE` >> $LOGFILE
+	echo "Extracting metadata tags from: $OLDFILE" >> $LOGFILE
+	t=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/TITLE=/ {print $2}'`;
+	A=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/ALBUM=/ {print $2}'`;
+	a=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/ARTIST=/ {print $2}'`;
+	N=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/TRACKNUMBER=/ {print $2}'`;
+	g=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/GENRE=/ {print $2}'`;
+	y=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/YEAR=/ {print $2}'`;
+}
+
+set_metadata() {
+	echo -n `$DATE` >> $LOGFILE;
+	echo "Setting metadata tags ..." >> $LOGFILE
+	fmetadata -t "$t" -a "$a" -A "$A" -g "$g" -T "$T" -y "$y" "$1" >> $LOGFILE 2>&1
+}
+
+print_enc_status() {
+	if [ "$2" == "OK" ]; then
+		printf "$GREEN$2$NOCOLOR.\n";
+		echo -n `$DATE` >> $LOGFILE;
+		echo "Encoded $1" >> $LOGFILE;
+	else
+		printf "$RED$2$NOCOLOR.\n";
+		echo -n `$DATE` >> $LOGFILE;
+		echo "Failed encoding $1" >> $LOGFILE;
+	fi
+}
+
+print_dec_status() {
+	if [ "$2" == "OK" ]; then
+		printf "${GREEN}$2${NOCOLOR}.\n";
+		echo -n `$DATE` >> $LOGFILE;
+		echo "Decoded $1" >> $LOGFILE;
+	else
+		printf "${RED}$2${NOCOLOR}.\n";
+		echo -n `$DATE` >> $LOGFILE;
+		echo "Failed decoding $1" >> $LOGFILE;
+	fi
+}
+
+check_overwrite() {
+	if [ -e "$1" -a "$OVERWRITE" = "no" ]; then
+		printf "$BLUE$1$NOCOLOR$RED exists. Overwriting disabled. Skipping ...$NOCOLOR\n";
+		CRUSH='no'
+	else
+		CRUSH='yes'
+	fi
+}
+
+convert_to_mp3() {
+	check_overwrite "$NEWFILE.mp3"
+	if [ "$CRUSH" = "no" ]; then
+		return 0;
+	fi
+	if [ "$VIAWAV" = "no" ]; then
+		echo -n `$DATE` >> $LOGFILE
+		printf "Encoding $BLUE $NEWFILE.mp3 $NOCOLOR ... " && STATUS="OK";
+		echo "Encoding $NEWFILE.mp3 ... " >> $LOGFILE 
+		( 
+			ffmpeg -y -i "$OLDFILE" -f wav - 2>> $LOGFILE | 
+			lame $MP3Q - "$NEWFILE.mp3" >> $LOGFILE 2>&1 
+		) || STATUS="FAIL"
+	else
+		convert_to_wav
+		echo "Encoding $NEWFILE.mp3 ... " >> $LOGFILE 
+		printf "Encoding ${BLUE}$NEWFILE.mp3${NOCOLOR} ... " && STATUS="OK"
+		lame $MP3Q "$NEWFILE.wav" "$NEWFILE.mp3" >> $LOGFILE 2>&1 || STATUS="FAIL"
+	fi
+
+	print_enc_status "$NEWFILE.mp3" $STATUS
+}
+
+convert_to_ogg() {
+	check_overwrite "$NEWFILE.ogg"
+	if [ "$CRUSH" = "no" ]; then
+		return 0;
+	fi
+	
+	if [ "$VIAWAV" = "no" ]; then
+		echo -n `$DATE` >> $LOGFILE
+		echo "Encoding $NEWFILE.ogg ... " >> $LOGFILE 
+                printf "Encoding $BLUE $NEWFILE.ogg $NOCOLOR ... " && STATUS="OK";
+                (
+                        ffmpeg -y -i "$OLDFILE" -f wav - 2>> $LOGFILE |
+                        oggenc $OGGQ -o "$NEWFILE.ogg" - >> $LOGFILE 2>&1
+                ) || STATUS="FAIL";
+        else
+                convert_to_wav
+                printf "Encoding ${BLUE}$NEWFILE.ogg${NOCOLOR} ... " && STATUS="OK"
+		echo "Encoding $NEWFILE.ogg ... " >> $LOGFILE 
+                oggenc $OGGQ -o "$NEWFILE.ogg" "$NEWFILE.wav" >> $LOGFILE 2>&1 || STATUS="FAIL"
+        fi
+	
+	print_enc_status "$OLDFILE" $STATUS
+}
+
+convert_to_wma() {
+	check_overwrite "$NEWFILE.wma"
+	if [ "$CRUSH" = "no" ]; then
+		return 0;
+	fi
+	echo -n `$DATE` >> $LOGFILE
+	echo "Encoding $NEWFILE.wma ... " >> $LOGFILE 
+	printf "Encoding $BLUE$NEWFILE.wma$NOCOLOR ... " && STATUS="OK";
+	ffmpeg -y -i "$OLDFILE" $WMAQ "$NEWFILE.wma" 2>> /dev/null || STATUS="FAIL";
+	print_enc_status "$OLDFILE" $STATUS
+}
+
+convert_to_aac() {
+	check_overwrite "$NEWFILE.m4a"
+	if [ "$CRUSH" = "no" ]; then
+		return 0;
+	fi
+
+        if [ "$VIAWAV" = "no" ]; then
+		echo -n `$DATE` >> $LOGFILE
+                printf "Encoding $BLUE $NEWFILE.m4a $NOCOLOR ... " && STATUS="OK";
+		echo "Encoding $NEWFILE.m4a ... " >> $LOGFILE 
+                (
+                        ffmpeg -y -i "$OLDFILE" -f wav - 2>> /dev/null |
+                        faac $AACQ --artist "$a" --title "$t" --album "$A"\
+                                --genre "$g" --year "$y" --track "$N" -o "$NEWFILE.m4a" - >> $LOGFILE 2>&1
+                ) || STATUS="FAIL";
+        else
+                convert_to_wav
+		echo "Encoding $NEWFILE.m4a ... " >> $LOGFILE 
+                printf "Encoding $BLUE$NEWFILE.m4a$NOCOLOR ... " && STATUS="OK";
+                faac $AACQ --artist "$a" --title "$t" --album "$A" --genre "$g" --year "$y" --track "$N" -o "$NEWFILE.m4a" "$NEWFILE.wav" >> $LOGFILE 2>&1 ||
+                        STATUS="FAIL"
+        fi
+
+	print_enc_status "$OLDFILE" $STATUS
+}
+
+convert_to_wav() {
+	check_overwrite "$NEWFILE.wav"
+	if [ "$CRUSH" = "no" ]; then
+		return 0;
+	fi
+	echo -n `$DATE` >> $LOGFILE
+	printf "Decoding ${BLUE}${OLDFILE}${NOCOLOR} ... " && STATUS="OK";
+	echo "Decoding $OLDFILE ... " >> $LOGFILE 
+	ffmpeg -y -i "$OLDFILE" -f wav "$NEWFILE.wav" >> $LOGFILE 2>&1 || STATUS="FAIL"
+	print_dec_status "$OLDFILE" $STATUS
+}
+
+check_src_and_dest() {
+	if [ "$1" = "$2" ]; then
+		printf "$BLUE$2$NOCOLOR:$RED source & destination files are the same. Skipping ...$NOCOLOR\n";
+		rm -v -f ".$2.swp" >> $LOGFILE 2>&1;
+		continue;
+	fi
+}
+
+usage() {
+	echo -e "ftransc $VER
+	usage:
+		ftransc [Options] files
+	Options:
+		-c 		- check dependencies.
+		-d		- decode to .wav file first
+		-f [format]	- audio format to encode to [mp3, wma, ogg, aac, wav]
+		-h		- display this help
+		-k		- keep .wav files (-d must also be specified)
+		-q [quality]	- audio quality [insane, high, normal, low]
+		-r		- remove original file after encoding.
+		-w		- overwrite destination file if it exists.
+	Examples:
+		1. To convert an audio file to MPEG-1 Layer III (mp3):
+			ftransc -f mp3 -q high new_artist-popular_song.m4a
+	
+		2. To convert to wma (Microsoft ASF) and remove the original ogg file:
+			ftransc -r -f wma -q normal my_song.ogg
+
+		3. The '-q' option can be left out for internal preset:
+			ftransc -f aac song_of_the_year.mp3" 
+	exit 1;
+}
+
+if [ "$UID" = "0" ]; then
+	printf "$RED Running$NOCOLOR$GREEN $progname$NOCOLOR$RED as 'root' is not supported.$NOCOLOR\n";
+	exit 1;
+fi
+if [ -z "$1" ]; then
+	usage;
+fi
+
+while getopts "dkhcrwvf:q:" opt ; do
+	case $opt in 
+		f)	FORMAT=`echo $OPTARG | tr [A-Z] [a-z]`
+			case "$FORMAT" in
+				aac|m4a|mp4)	 FORMAT="m4a" ;;
+				mp3|wma|ogg|wav) FORMAT="$FORMAT" ;;
+				*)		printf "$BLUE$FORMAT$NOCOLOR$RED is unsupported output format.$NOCOLOR\n"; exit 1 ;;
+			esac
+			;;
+		d)	VIAWAV="yes";;
+		k)	KEEPWAV="yes";;
+		q)	QUALITY="$OPTARG"; set_quality_presets;;
+		r)	REMOVE="yes";; # default is 'no'
+		w)	OVERWRITE="yes" ;; # default is 'no'
+		c)	check_dependencies "check"; exit 0;;
+		v)	printf "$BLUE$progname $NOCOLOR$GREEN$VER$NOCOLOR\n"; exit 0;;
+		h|*)	usage;;
+	esac
+done
+shift $(($OPTIND - 1));
+mklog;
+check_dependencies "dummy_variable";
+
+for track in "$@"
+do
+	OLDFILE="$track";
+	if [ ! -e "$OLDFILE" ]; then
+		printf "$BLUE$OLDFILE$NOCOLOR$RED does not exist. Skipping ...$NOCOLOR\n";
+		continue
+	fi
+	if [ -e ".$OLDFILE.swp" ]; then
+		printf "$RED $OLDFILE is locked.\nRemove .$OLDFILE.swp and try again.
+		\nSkipping$NOCOLOR $BLUE$OLDFILE$NOCOLOR\n"
+		continue
+	fi
+
+	touch ".$OLDFILE.swp" 2> /dev/null || 
+	{ printf "$RED+\tNo permission to write to this directory.$NOCOLOR\n" && exit 1; }
+
+	NEWFILE=`echo "$OLDFILE" | tr [[]] _ | sed -e s/....$//`; 
+	EXT=`echo "$OLDFILE" | tr [[]] _ | sed -e s/"$NEWFILE"// | sed -e s/^.//`;
+	
+	if [ "$FORMAT" != "wav" ]; then
+		get_metadata "$OLDFILE";
+	fi
+	
+	check_src_and_dest "$NEWFILE.$FORMAT" "$OLDFILE" 
+	
+	case $FORMAT in
+		mp3)		convert_to_mp3 ;;
+		wma)		convert_to_wma ;;
+		ogg)		convert_to_ogg ;;
+		aac|m4a|mp4)	convert_to_aac ;;
+		wav)		convert_to_wav ;;
+		*) 		printf "$BLUE$FORMAT$NOCOLOR$RED is unsupported output format.$NOCOLOR\n" 
+				exit 1 ;;
+	esac
+	
+	if [ "$FORMAT" != "wav" ]; then
+		set_metadata "$NEWFILE.$FORMAT"
+	fi
+
+	if [ "$REMOVE" = "yes" -a "$STATUS" = "OK" ]; then
+		echo -n `$DATE` >> $LOGFILE;
+		rm -f -v "$OLDFILE"  >> $LOGFILE 2>&1;
+	fi
+
+	if [ "$VIAWAV" = "yes" -a "$KEEPWAV" = "no" ]; then
+		rm -f -v "$NEWFILE.wav" >> $LOGFILE 2>&1
+	fi
+	
+	echo -n `$DATE` >> $LOGFILE;
+	rm -f -v ".$OLDFILE.swp" >> $LOGFILE 2>&1;
+done
+
