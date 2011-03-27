@@ -1,358 +1,457 @@
-#!/bin/bash
-############################################################################
-# Copyright (C) 2007-2011 Mkhanyisi Madlavana <mmadlavana@gmail.com>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-############################################################################
+#!/usr/bin/python
+# Audio converter script
+# Copyright 2007-2011 Mkhanyisi Madlavana
 
-readonly VER="v3.2.2";
-REMOVE="no";
-OVERWRITE="no";
-CRUSH='no';
-VIAWAV="no";
-KEEPWAV="no";
-GREEN="\033[1;32m";
-RED="\033[1;31m";
-PINK="\033[1;35m";
-BLUE="\033[1;34m";
-NOCOLOR="\033[0m";
-progname=`basename $0`
+import time
+import optparse
+import subprocess as sub
 
-mklog() {
-LOGFILE="/tmp/ftransc.log";
-printf "$PINK=================================================
-ftransc $VER\n\tlog file:$NOCOLOR $RED $LOGFILE $NOCOLOR
-$PINK=================================================$NOCOLOR\n"
-echo -e "\n===================== ftransc ====================" > $LOGFILE
-DATE="date +[%H:%M:%S] "
+import mutagen
+import mutagen.id3 as id3
+import mutagen.mp3 as mp3
+import mutagen.mp4 as mp4
+import mutagen.asf as asf
+import mutagen.flac as flac
+import mutagen.oggvorbis as ogg
+
+def get_ext(f):
+    """ 
+    returns (filename_without_ext, ext)
+    eg: 'mysong.mp3' will be returned as 
+    ('mysong','.mp3')
+    """
+    idx = f.rfind('.')
+    if idx < 0:
+        return (f, None)
+    else:
+        return (f[:idx], f[idx:])
+
+def set_metadata(files, mytags):
+    """
+    sets metadata tags as specified by the 'mytags' dictionary
+    keys/tags with empty values in 'mytags' are ignored.
+    NB: the 'files' variable must be a list.
+    """
+    for f in files:
+        dummy, ext = get_ext(f)
+        if ext == '.mp3':
+            metadata = mp3.Open(f)
+            tags = {}
+            if mytags['artist'] is not None:
+                tags['TPE1'] = id3.TPE1(encoding=3, text=[u'%s' % mytags['artist']])
+            if mytags['title'] is not None:
+                tags['TIT2'] = id3.TIT2(encoding=3, text=[u'%s' % mytags['title']])
+            if mytags['album'] is not None:
+                tags['TALB'] = id3.TALB(encoding=3, text=[u'%s' % mytags['album']])
+            if mytags['year'] is not None:
+                tags['TDRC'] = id3.TDRC(encoding=3, text=[u'%s' % mytags['year']])
+            if mytags['genre'] is not None:
+                tags['TCON'] = id3.TCON(encoding=3, text=[u'%s' % mytags['genre']])
+            if mytags['tracknumber'] is not None:
+                tags['TRCK'] = id3.TRCK(encoding=3, text=[u'%s' % mytags['tracknumber']])
+
+        elif ext == '.wma':
+            metadata = asf.Open(f)
+            tags = {}
+            if mytags['title'] is not None:
+                tags["Title"] = mytags['title']
+            if mytags['artist'] is not None:
+                tags["Author"] = mytags['artist']
+            if mytags['album'] is not None:
+                tags["WM/AlbumTitle"] = mytags['album']
+            if mytags['year'] is not None:
+                tags["WM/Year"] = mytags['year']
+            if mytags['genre'] is not None:
+                tags["WM/Genre"] = mytags['genre']
+            if mytags['tracknumber'] is not None:
+                tags["WM/TrackNumber"] = mytags['tracknumber']
+
+        elif ext in ('.ogg', '.flac'):
+            if ext == '.flac':
+                metadata = flac.Open(f)
+            else:
+                metadata = ogg.Open(f)
+            tags = {}
+            for key, value in mytags.items():
+                if value is not None:
+                    if key == "year":
+                        key = "date"
+                    tags[key] = value
+
+        elif ext in ('.m4a', '.aac', '.mp4'):
+            metadata = mp4.Open(f)
+            tags = {}
+            if mytags['title'] is not None:
+                tags['\xa9nam'] = [u'%s' % mytags['title']]
+            if mytags['artist'] is not None:
+                tags['\xa9ART'] = [u'%s' % mytags['artist']]
+            if mytags['album'] is not None:
+                tags['\xa9alb'] = [u'%s' % mytags['album']]
+            if mytags['genre'] is not None:
+                tags['\xa9gen'] = [u'%s' % mytags['genre']]
+            if mytags['year'] is not None:
+                tags['\xa9day'] = [u'%s' % mytags['year']]
+            if mytags['tracknumber'] is not None:
+                # tracknumber for track 8, disk 2 is 8/2 (ie tracknum/disknum)
+                try:
+                    t = map(int,mytags['tracknumber'].split('/'))
+                    tags['trkn'] = [(t[0], t[1])]
+                except IndexError:
+                    try:
+                        tags['trkn'] = [(t[0],0)]
+                    except:
+                        tags['trkn'] = [(mytags['tracknumber'],0)]
+                except:
+                    if tags.has_key('trkn'):
+                        tags.pop('trkn')
+        else:
+            continue
+
+        for key, value in tags.items():
+            if value is not None:
+                metadata[key] = value
+        metadata.save()
+
+def get_metadata(files):
+    """
+    gets, and prints out if required, the song information (aka metadata)
+    the 'files' variable must be a list.
+    """
+    for f in files:
+        artist, album, title = None, None, None
+        genre, year, tracknumber = None, None, None
+        ext = get_ext(f.lower())[1]
+        metadata = mutagen.File(f,easy=True)
+
+        if ext in ['.ogg', '.flac', '.mp3', '.mp4', '.aac', '.m4a']:
+            if metadata.has_key('artist'):
+                artist = metadata['artist'][0]
+            if metadata.has_key('album'):
+                album = metadata['album'][0]
+            if metadata.has_key('title'):
+                title = metadata['title'][0]
+            if metadata.has_key('genre'):
+                genre = metadata['genre'][0]
+            if metadata.has_key('date'):
+                year = metadata['date'][0]
+            if metadata.has_key('tracknumber'):
+                tracknumber = metadata['tracknumber'][0]
+        elif ext == '.wma':
+            if metadata.has_key('Author'):
+                artist = metadata['Author'][0]
+            if metadata.has_key('WM/AlbumTitle'):
+                album = metadata['WM/AlbumTitle'][0]
+            if metadata.has_key('Title'):
+                title = metadata['Title'][0]
+            if metadata.has_key('WM/Genre'):
+                genre = metadata['WM/Genre'][0]
+            if metadata.has_key('TRCK'):
+                year = metadata['WM/Year'][0]
+            if metadata.has_key('WM/TrackNumber'):
+                tracknumber = metadata['WM/TrackNumber'][0]
+
+        metadata_tags = {
+                "title"         : title, 
+                "artist"        : artist, 
+                "album"         : album, 
+                "tracknumber"   : tracknumber, 
+                "genre"         : genre, 
+                "year"          : year
+                }
+
+        nonempty_count = 0
+        for key, val in metadata_tags.items():
+            if val is not None:
+                nonempty_count += 1
+                try:
+                    metadata_tags[key] = unicode(val,'utf-8')
+                except:
+                    continue
+        return (metadata_tags, nonempty_count)
+
+def log_time():
+    """
+    returns current time in HOUR:MINUTE:SECOND format
+    """
+    return time.strftime("%H:%M:%S", time.localtime())
+
+def check_deps(check=False):
+    """
+    checks whether all dependencies for this script are installed or not.
+    the results are printed out on the screen if check=True or are redirected 
+    to a log file if check=False
+    """
+    deps = ('lame', 'ffmpeg', 'flac', 'oggenc', 'faac', 'mutagen-inspect')
+    for d in deps:
+        pkg = sub.Popen(["which", d], stdout=sub.PIPE).communicate()[0].strip() 
+        if check:
+            print d + '...',
+            if not pkg:
+                print red + "not installed" + nc + "."
+            else:
+                print green + "installed" + nc + "."
+        else:
+            log_file.write("[%s]" % log_time())
+            if pkg:
+                log_file.write("%s\n" % pkg)
+            else:
+                msg = "_______ %s not installed _______" % d
+                print red + msg + nc + "."
+                log_file.write(msg + "\n")
+    if check:
+        raise SystemExit(0)
+
+def convert_to_mp3(filename, ext, stderr_out, preset=None):
+    """
+    converts input track to MPEG-1 Layer III format (aka MP3)
+    """
+    cmd1 = ["ffmpeg", "-y", "-i", filename + ext, "-f", "wav", "/dev/stdout"]
+    cmd2 = ("lame " + preset).split()
+    cmd2.extend(["-", "./" + filename + ".mp3"])
+    return convert(stderr_out, cmdline1=cmd1, cmdline2=cmd2)
+
+def convert_to_m4a(filename, ext, stderr_out, preset=None):
+    """
+    converts input track into MPEG-4 audio format (aka AAC/M4A/MP4)
+    """
+    cmd1 = ["ffmpeg", "-y", "-i", filename + ext, "-f", "wav", "/dev/stdout"]
+    cmd2 = ("faac " + preset).split()
+    cmd2.extend(["-o", "./" + filename + ".m4a", "/dev/stdin"])
+    return convert(stderr_out, cmdline1=cmd1, cmdline2=cmd2)
+   
+def convert_to_wma(filename, ext, stderr_out, preset=None):
+    """
+    converts an input track into the Microsoft ASF format (aka WMA)
+    """
+    cmd1 = ["ffmpeg", "-y", "-i", filename + ext]
+    cmd2 =  preset.split()
+    cmd1.extend(cmd2)
+    cmd1.append("./" + filename + ".wma")
+    return convert(stderr_out, cmdline1=cmd1)
+
+def convert_to_ogg(filename, ext, stderr_out, preset=None):
+    """
+    converts input track into Ogg Vorbis format
+    """
+    cmd1 = ["ffmpeg", "-y", "-i", filename + ext, "-f", "wav", "/dev/stdout"]
+    cmd2 = ("oggenc " + preset).split()
+    cmd2.extend(["-o", "./" + filename + ".ogg", "/dev/stdin"])
+    return convert(stderr_out, cmdline1=cmd1, cmdline2=cmd2)
+   
+def convert_to_wav(filename, ext, stderr_out, preset=None):
+    """
+    decodes a track into WAVE format. This format has no metadata support.
+    """
+    cmd = ["ffmpeg", "-y", "-i", filename + ext, "-f", "wav", "./" + filename + ".wav"]
+    return convert(stderr_out, cmdline1=cmd)
+
+def convert_to_flac(filename, ext, stderr_out, preset=None):
+    """
+    converts input track into Free Lossless Audio Codec format (aka FLAC).
+    this format is lossless and supports metadata tags.
+    """
+    status = convert_to_wav(filename, ext, stderr_out)
+    if status:
+        return 1
+
+    cmd = ("flac " + preset).split()
+    cmd.extend(["-f", "-o", "./" + filename + ".flac", filename + ".wav"])
+    return convert(stderr_out, cmdline1=cmd)
+
+def convert(stderr_out,cmdline1=None, cmdline2=None):
+    if cmdline1 is not None and cmdline2 is not None:
+        p1 = sub.Popen(cmdline1, stdout=sub.PIPE, stderr=stderr_out)
+        p2 = sub.Popen(cmdline2, stdin=p1.stdout, stdout=sub.PIPE, stderr=stderr_out)
+        output = p2.communicate()
+        return p2.returncode
+    elif cmdline1 is not None and cmdline2 is None:
+        p1 = sub.Popen(cmdline1, stdout=sub.PIPE, stderr=stderr_out)
+        output = p1.communicate()
+        return p1.returncode
+    else:
+        raise SystemExit("Error: unexpected arguments on the convert() function")
+
+# audio quality presets.
+quality_presets = {
+        "mp3": 
+        {
+            "insane"    : "--cbr -b 320",
+            "extreme"   : "-V 0",
+            "high"      : "-V 2",
+            "normal"    : "-V 4",
+            "low"       : "--preset 64",
+            "tiny"      : "--cbr -b 32 -m m -s 32",
+            },
+        "ogg": 
+        {
+            "insane"    : "-q 10",
+            "extreme"   : "-q 8",
+            "high"      : "-q 6",
+            "normal"    : "",
+            "low"       : "-q 1",
+            "tiny"      : "-q -1",
+            },
+        "wma":
+        {
+            "insane"    : "-ab 320000 -ac 2 -acodec wmav2",
+            "extreme"   : "-ab 256000 -ac 2 -acodec wmav2",
+            "high"      : "-ab 192000 -ac 2 -acodec wmav2",
+            "normal"    : "-ab 128000 -ac 2 -acodec wmav2",
+            "low"       : "-ab 64000 -ac 2 -acodec wmav2",
+            "tiny"      : "-ab 32000 -ac 2 -acodec wmav2",
+            },
+        "m4a":
+        {
+            "insane"    : "-q 500 -w",
+            "extreme"   : "-q 350 -w",
+            "high"      : "-q 200 -w",
+            "normal"    : "-w",
+            "low"       : "-q 50 -w",
+            "tiny"      : "-q 10 -w",
+            },
+        "flac":
+        {
+            "insane"    : "--best",
+            "extreme"   : "-7",
+            "high"      : "-6",
+            "normal"    : "-5",
+            "low"       : "-3",
+            "tiny"      : "--fast",
+            },
+        "wav": 
+        {
+            "insane"    : None, 
+            "extreme"   : None, 
+            "high"      : None,
+            "normal"    : None, 
+            "low"       : None, 
+            "tiny"      : None,
+            }
 }
 
-check_dependencies() {
-	for program in lame ffmpeg oggenc faac mutagen-inspect fmetadata
-	do
-		if [ "$1" = "check" ]; then
-			printf "$BLUE$program$NOCOLOR... ";
-			FOUND="No";
-			which $program > /dev/null 2>&1 && FOUND="Yes";
-			if [ "$FOUND" = "Yes" ]; then
-				printf "$GREEN installed$NOCOLOR.\n";
-			else
-				printf "$RED not installed$NOCOLOR.\n";
-			fi
-			continue
-		fi
-		echo -n `$DATE` >> $LOGFILE
-		which $program 1>> $LOGFILE 2>&1 ||
-		{ errmsg="________ $program not installed___________";
-			printf "$RED$errmsg$NOCOLOR\n";
-			echo "$errmsg" >> $LOGFILE; }
-	done
-	if [ "$1" = "check" ]; then
-		exit 0;
-	fi
-}
+converters = {
+        "mp3"   : convert_to_mp3,
+        "ogg"   : convert_to_ogg,
+        "m4a"   : convert_to_m4a,
+        "wma"   : convert_to_wma,
+        "wav"   : convert_to_wav,
+        "flac"  : convert_to_flac,
+        }
 
-set_quality_presets() {
-	case $QUALITY in
-		insane) 
-			readonly MP3Q='--quiet --cbr -b 320'
-			readonly AACQ='-q 500 -w'
-			readonly OGGQ='--quiet -q 10'
-			readonly WMAQ='-ab 320000 -ac 2 -acodec wmav2'
-			;;
-		high) 
-			readonly MP3Q='--quiet --vbr-new -h'
-			readonly AACQ='-q 200 -w'
-			readonly OGGQ='--quiet -q 6'
-			readonly WMAQ='-ab 192000 -ac 2 -acodec wmav2'
-			;;
-		low)
-			readonly MP3Q='--quiet -q 4 --abr 56'
-			readonly AACQ='-q 50 -w'
-			readonly OGGQ='--quiet -q 1'
-			readonly WMAQ='-ab 56000 -ac 2 -acodec wmav2'
-			;;
-		normal|default|*) 
-			readonly MP3Q='--quiet' 	# LAME defaults: 128kbps CBR
-			readonly AACQ='-w' 		# FAAC defaults: q = 100
-			readonly OGGQ='--quiet'		# oggenc defaults: q = 3
-			readonly WMAQ='-ab 128000 -ac 2 -acodec wmav2'
-			;;
-	esac
-}
+if __name__ == "__main__":
+    parser = optparse.OptionParser(usage="%prog [options] [files]", version="4.0.0")
+    parser.add_option('-f', '--format', type=str, default='mp3', help='audio format to convert to')
+    parser.add_option('-q', '--quality', type=str, default='normal', help='audio quality preset')
+    parser.add_option('-c', '--check', dest='check', action='store_true', help='check dependencies')
+    parser.add_option('-r', '--remove', dest='remove', action='store_true', help='remove original file after converting successfully')
+    parser.add_option('-d', '--decode', dest='decode', action='store_true', help='decode file .wav format')
+    parser.add_option('-w', '--over', dest='overwrite', action='store_true', help='overwrite destination file if it exists already')
+    parser.add_option('-u', '--unlock', dest='unlock', action='store_true', help='unlock a locked file and convert')
+    parser.add_option('--directory', dest="walk", default=None, type=str, help='convert all files inside the given directory')
+    opt, files = parser.parse_args()
 
-get_metadata() {
-	echo -n `$DATE` >> $LOGFILE
-	echo "Extracting metadata tags from: $OLDFILE" >> $LOGFILE
-	t=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/TITLE=/ {print $2}'`;
-	A=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/ALBUM=/ {print $2}'`;
-	a=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/ARTIST=/ {print $2}'`;
-	N=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/TRACKNUMBER=/ {print $2}'`;
-	g=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/GENRE=/ {print $2}'`;
-	y=`fmetadata -l 1 "$1" 2>> $LOGFILE | awk -F= '/YEAR=/ {print $2}'`;
-}
+    if len(files) < 1 and opt.walk is None and opt.check is None:
+        raise SystemExit("ftransc: no input file")
+    
+    if opt.walk is not None:
+        walker = sub.os.walk(opt.walk)
+        dest_dir, dummy, files = walker.next()
+        pwd = sub.os.getcwd()
+        sub.os.chdir(dest_dir)
+        
+    # print colors
+    red = "\033[1;31m"
+    green = "\033[1;32m"
+    blue = "\033[1;34m"
+    pink = "\033[1;35m"
+    nc = "\033[0m"
+   
+    opt.quality = opt.quality.lower()
+    opt.format = opt.format.lower()
+    if opt.format in ("mp4","m4a","aac"):
+        opt.format = "m4a"
+    if opt.decode:
+        opt.format = "wav"
+    if not quality_presets.has_key(opt.format):
+        raise SystemExit("%s%s%s is not a supported format" % (red, opt.format, nc))
+    if not quality_presets[opt.format].has_key(opt.quality):
+        print "%s%s%s is not a valid quality preset, using %s%s%s." % (red, opt.quality, nc, green, 'normal', nc)
+        opt.quality = "normal"
+    if not opt.check:
+        log_file = open('/tmp/ftransc.log','w')
+        null_file = open('/dev/null','w')
+    check_deps(opt.check)
 
-set_metadata() {
-	echo -n `$DATE` >> $LOGFILE;
-	echo "Setting metadata tags ..." >> $LOGFILE
-	fmetadata -t "$t" -a "$a" -A "$A" -g "$g" -T "$T" -y "$y" "$1" >> $LOGFILE 2>&1
-}
+    # go through each file: 1. extract tags, 2. convert, and 3. insert tags
+    count = 0
+    for in_file in files:
+        count += 1
+        total = len(files)
+        out_file = get_ext(in_file)[0] + "." + opt.format
+        if out_file == in_file:
+            print "[%s%d/%d%s]: %s%s%s: same input file & output file" % (pink, count, total, nc, red, in_file, nc)
+            continue
+        if not sub.os.path.exists(in_file):
+            print "[%s%d/%d%s]: %s%s%s does not exist" % (pink, count, total, nc, red, in_file, nc)
+            continue
+        if sub.os.path.isfile(out_file) and not opt.overwrite:
+            print "[%s%d/%d%s]: skipping %s%s%s: overwrite disabled" % (pink, count, total, nc, red, in_file, nc)
+            continue
+        if sub.os.path.isdir(in_file) and opt.walk is None:
+            print "[%s%d/%d%s]: skipping directory %s%s%s, use '--directory'" % (pink, count, total, nc, red, in_file, nc)
+            continue
+        swp_file = ".%s.swp" % in_file
+        if sub.os.path.isfile(swp_file):
+            if opt.unlock:
+                pass
+            else:
+                print "[%s%d/%d%s]: '%s' is %slocked%s" % (pink, count, total, nc, in_file, red, nc)
+                continue
+        else:
+            try:
+                dummy = open(swp_file ,"w")
+                dummy.close()
+            except:
+                raise SystemExit("You %sdo not have permissions%s to write to this folder" % (red, nc))
 
-print_enc_status() {
-	if [ "$2" == "OK" ]; then
-		printf "$GREEN$2$NOCOLOR.\n";
-		echo -n `$DATE` >> $LOGFILE;
-		echo "Encoded $1" >> $LOGFILE;
-	else
-		printf "$RED$2$NOCOLOR.\n";
-		echo -n `$DATE` >> $LOGFILE;
-		echo "Failed encoding $1" >> $LOGFILE;
-	fi
-}
+        try:
+            log_file.write("\n[%s]extracting metadata from '%s' ... " % (log_time(), in_file))
+            metadata, tag_count = get_metadata([in_file])
+            if tag_count < 1:
+                log_file.write("no metadata found\n")
+            else:
+                log_file.write('OK\n')  
 
-print_dec_status() {
-	if [ "$2" == "OK" ]; then
-		printf "${GREEN}$2${NOCOLOR}.\n";
-		echo -n `$DATE` >> $LOGFILE;
-		echo "Decoded $1" >> $LOGFILE;
-	else
-		printf "${RED}$2${NOCOLOR}.\n";
-		echo -n `$DATE` >> $LOGFILE;
-		echo "Failed decoding $1" >> $LOGFILE;
-	fi
-}
-
-check_overwrite() {
-	if [ -e "$1" -a "$OVERWRITE" = "no" ]; then
-		printf "$BLUE$1$NOCOLOR$RED exists. Overwriting disabled. Skipping ...$NOCOLOR\n";
-		CRUSH='no'
-	else
-		CRUSH='yes'
-	fi
-}
-
-convert_to_mp3() {
-	check_overwrite "$NEWFILE.mp3"
-	if [ "$CRUSH" = "no" ]; then
-		return 0;
-	fi
-	if [ "$VIAWAV" = "no" ]; then
-		echo -n `$DATE` >> $LOGFILE
-		printf "Encoding $BLUE $NEWFILE.mp3 $NOCOLOR ... " && STATUS="OK";
-		echo "Encoding $NEWFILE.mp3 ... " >> $LOGFILE 
-		( 
-			ffmpeg -y -i "$OLDFILE" -f wav - 2>> $LOGFILE | 
-			lame $MP3Q - "$NEWFILE.mp3" >> $LOGFILE 2>&1 
-		) || STATUS="FAIL"
-	else
-		convert_to_wav
-		echo "Encoding $NEWFILE.mp3 ... " >> $LOGFILE 
-		printf "Encoding ${BLUE}$NEWFILE.mp3${NOCOLOR} ... " && STATUS="OK"
-		lame $MP3Q "$NEWFILE.wav" "$NEWFILE.mp3" >> $LOGFILE 2>&1 || STATUS="FAIL"
-	fi
-
-	print_enc_status "$NEWFILE.mp3" $STATUS
-}
-
-convert_to_ogg() {
-	check_overwrite "$NEWFILE.ogg"
-	if [ "$CRUSH" = "no" ]; then
-		return 0;
-	fi
-	
-	if [ "$VIAWAV" = "no" ]; then
-		echo -n `$DATE` >> $LOGFILE
-		echo "Encoding $NEWFILE.ogg ... " >> $LOGFILE 
-                printf "Encoding $BLUE $NEWFILE.ogg $NOCOLOR ... " && STATUS="OK";
-                (
-                        ffmpeg -y -i "$OLDFILE" -f wav - 2>> $LOGFILE |
-                        oggenc $OGGQ -o "$NEWFILE.ogg" - >> $LOGFILE 2>&1
-                ) || STATUS="FAIL";
-        else
-                convert_to_wav
-                printf "Encoding ${BLUE}$NEWFILE.ogg${NOCOLOR} ... " && STATUS="OK"
-		echo "Encoding $NEWFILE.ogg ... " >> $LOGFILE 
-                oggenc $OGGQ -o "$NEWFILE.ogg" "$NEWFILE.wav" >> $LOGFILE 2>&1 || STATUS="FAIL"
-        fi
-	
-	print_enc_status "$OLDFILE" $STATUS
-}
-
-convert_to_wma() {
-	check_overwrite "$NEWFILE.wma"
-	if [ "$CRUSH" = "no" ]; then
-		return 0;
-	fi
-	echo -n `$DATE` >> $LOGFILE
-	echo "Encoding $NEWFILE.wma ... " >> $LOGFILE 
-	printf "Encoding $BLUE$NEWFILE.wma$NOCOLOR ... " && STATUS="OK";
-	ffmpeg -y -i "$OLDFILE" $WMAQ "$NEWFILE.wma" 2>> /dev/null || STATUS="FAIL";
-	print_enc_status "$OLDFILE" $STATUS
-}
-
-convert_to_aac() {
-	check_overwrite "$NEWFILE.m4a"
-	if [ "$CRUSH" = "no" ]; then
-		return 0;
-	fi
-
-        if [ "$VIAWAV" = "no" ]; then
-		echo -n `$DATE` >> $LOGFILE
-                printf "Encoding $BLUE $NEWFILE.m4a $NOCOLOR ... " && STATUS="OK";
-		echo "Encoding $NEWFILE.m4a ... " >> $LOGFILE 
-                (
-                        ffmpeg -y -i "$OLDFILE" -f wav - 2>> /dev/null |
-                        faac $AACQ --artist "$a" --title "$t" --album "$A"\
-                                --genre "$g" --year "$y" --track "$N" -o "$NEWFILE.m4a" - >> $LOGFILE 2>&1
-                ) || STATUS="FAIL";
-        else
-                convert_to_wav
-		echo "Encoding $NEWFILE.m4a ... " >> $LOGFILE 
-                printf "Encoding $BLUE$NEWFILE.m4a$NOCOLOR ... " && STATUS="OK";
-                faac $AACQ --artist "$a" --title "$t" --album "$A" --genre "$g" --year "$y" --track "$N" -o "$NEWFILE.m4a" "$NEWFILE.wav" >> $LOGFILE 2>&1 ||
-                        STATUS="FAIL"
-        fi
-
-	print_enc_status "$OLDFILE" $STATUS
-}
-
-convert_to_wav() {
-	check_overwrite "$NEWFILE.wav"
-	if [ "$CRUSH" = "no" ]; then
-		return 0;
-	fi
-	echo -n `$DATE` >> $LOGFILE
-	printf "Decoding ${BLUE}${OLDFILE}${NOCOLOR} ... " && STATUS="OK";
-	echo "Decoding $OLDFILE ... " >> $LOGFILE 
-	ffmpeg -y -i "$OLDFILE" -f wav "$NEWFILE.wav" >> $LOGFILE 2>&1 || STATUS="FAIL"
-	print_dec_status "$OLDFILE" $STATUS
-}
-
-check_src_and_dest() {
-	if [ "$1" = "$2" ]; then
-		printf "$BLUE$2$NOCOLOR:$RED source & destination files are the same. Skipping ...$NOCOLOR\n";
-		rm -v -f ".$2.swp" >> $LOGFILE 2>&1;
-		continue;
-	fi
-}
-
-usage() {
-	echo -e "ftransc $VER
-	usage:
-		ftransc [Options] files
-	Options:
-		-c 		- check dependencies.
-		-d		- decode to .wav file first
-		-f [format]	- audio format to encode to [mp3, wma, ogg, aac, wav]
-		-h		- display this help
-		-k		- keep .wav files (-d must also be specified)
-		-q [quality]	- audio quality [insane, high, normal, low]
-		-r		- remove original file after encoding.
-		-w		- overwrite destination file if it exists.
-	Examples:
-		1. To convert an audio file to MPEG-1 Layer III (mp3):
-			ftransc -f mp3 -q high new_artist-popular_song.m4a
-	
-		2. To convert to wma (Microsoft ASF) and remove the original ogg file:
-			ftransc -r -f wma -q normal my_song.ogg
-
-		3. The '-q' option can be left out for internal preset:
-			ftransc -f aac song_of_the_year.mp3" 
-	exit 1;
-}
-
-if [ "$UID" = "0" ]; then
-	printf "$RED Running$NOCOLOR$GREEN $progname$NOCOLOR$RED as 'root' is not supported.$NOCOLOR\n";
-	exit 1;
-fi
-if [ -z "$1" ]; then
-	usage;
-fi
-
-while getopts "dkhcrwvf:q:" opt ; do
-	case $opt in 
-		f)	FORMAT=`echo $OPTARG | tr [A-Z] [a-z]`
-			case "$FORMAT" in
-				aac|m4a|mp4)	 FORMAT="m4a" ;;
-				mp3|wma|ogg|wav) FORMAT="$FORMAT" ;;
-				*)		printf "$BLUE$FORMAT$NOCOLOR$RED is unsupported output format.$NOCOLOR\n"; exit 1 ;;
-			esac
-			;;
-		d)	VIAWAV="yes";;
-		k)	KEEPWAV="yes";;
-		q)	QUALITY="$OPTARG"; set_quality_presets;;
-		r)	REMOVE="yes";; # default is 'no'
-		w)	OVERWRITE="yes" ;; # default is 'no'
-		c)	check_dependencies "check"; exit 0;;
-		v)	printf "$BLUE$progname $NOCOLOR$GREEN$VER$NOCOLOR\n"; exit 0;;
-		h|*)	usage;;
-	esac
-done
-shift $(($OPTIND - 1));
-mklog;
-check_dependencies "dummy_variable";
-
-for track in "$@"
-do
-	OLDFILE="$track";
-	if [ ! -e "$OLDFILE" ]; then
-		printf "$BLUE$OLDFILE$NOCOLOR$RED does not exist. Skipping ...$NOCOLOR\n";
-		continue
-	fi
-	if [ -e ".$OLDFILE.swp" ]; then
-		printf "$RED $OLDFILE is locked.\nRemove .$OLDFILE.swp and try again.
-		\nSkipping$NOCOLOR $BLUE$OLDFILE$NOCOLOR\n"
-		continue
-	fi
-
-	touch ".$OLDFILE.swp" 2> /dev/null || 
-	{ printf "$RED+\tNo permission to write to this directory.$NOCOLOR\n" && exit 1; }
-
-	NEWFILE=`echo "$OLDFILE" | tr [[]] _ | sed -e s/....$//`; 
-	EXT=`echo "$OLDFILE" | tr [[]] _ | sed -e s/"$NEWFILE"// | sed -e s/^.//`;
-	
-	if [ "$FORMAT" != "wav" ]; then
-		get_metadata "$OLDFILE";
-	fi
-	
-	check_src_and_dest "$NEWFILE.$FORMAT" "$OLDFILE" 
-	
-	case $FORMAT in
-		mp3)		convert_to_mp3 ;;
-		wma)		convert_to_wma ;;
-		ogg)		convert_to_ogg ;;
-		aac|m4a|mp4)	convert_to_aac ;;
-		wav)		convert_to_wav ;;
-		*) 		printf "$BLUE$FORMAT$NOCOLOR$RED is unsupported output format.$NOCOLOR\n" 
-				exit 1 ;;
-	esac
-	
-	if [ "$FORMAT" != "wav" ]; then
-		set_metadata "$NEWFILE.$FORMAT"
-	fi
-
-	if [ "$REMOVE" = "yes" -a "$STATUS" = "OK" ]; then
-		echo -n `$DATE` >> $LOGFILE;
-		rm -f -v "$OLDFILE"  >> $LOGFILE 2>&1;
-	fi
-
-	if [ "$VIAWAV" = "yes" -a "$KEEPWAV" = "no" ]; then
-		rm -f -v "$NEWFILE.wav" >> $LOGFILE 2>&1
-	fi
-	
-	echo -n `$DATE` >> $LOGFILE;
-	rm -f -v ".$OLDFILE.swp" >> $LOGFILE 2>&1;
-done
-
+        except IOError:
+            print "[%s%d/%d%s]: Unable to read %s%s%s" % (pink, count, total, nc, red, in_file, nc)
+            log_file.write('Fail\n')
+            dummy = sub.os.remove(swp_file)
+            continue
+        
+        in_filename, in_ext = get_ext(in_file)
+        log_file.write("[%s]converting '%s' to %s format ... " % (log_time(), in_file, opt.format.upper()))
+        if not converters[opt.format](in_filename, in_ext, null_file, preset=quality_presets[opt.format][opt.quality]):
+            print "[%s%d/%d%s]: '%s' => %s format = %sSuccess%s" % (pink, count, total, nc, in_file, opt.format.upper(), green, nc)
+            log_file.write('OK\n')
+            if opt.remove:
+                dummy = sub.os.remove(in_file)
+            dummy = sub.os.remove(swp_file)
+        else:
+            print "[%s%d/%d%s]: '%s' => %s format = %sFail%s" % (pink, count, total, nc, in_file, opt.format.upper(), red, nc)
+            log_file.write('Fail\n')
+            dummy = sub.os.remove(swp_file)
+            continue
+        
+        if tag_count > 0:
+            try:
+                log_file.write("[%s]inserting metadata to '%s' ... " % (log_time(), out_file))
+                set_metadata([out_file], metadata)
+                log_file.write("OK\n")
+            except:
+                print "%sUnable%s to insert metadata to '%s'" % (red, nc, out_file)
+                log_file.write("Fail\n")
+                continue
+       
+    if not opt.check:
+        log_file.close()
+        null_file.close()
