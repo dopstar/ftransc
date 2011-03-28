@@ -1,27 +1,51 @@
-#summary Details on how to use ftransc
+#summary ftransc Installation Instructions and Usage Tutorials
 
-= The ftransc Tutorial=
+= What is ftransc =
 
 ftransc is a script written in python for the linux operating system 
 for converting audio files across various formats.
 
+== ftransc Dependencies ==
+
 The dependencies for ftransc are:
   * [http://code.google.com/p/mutagen mutagen] - for metadata handling
-  * ffmpeg - for decoding all input multimedia files and encoding to  wma format.
-  * lame - for encoding to mp3 format.
-  * flac - for encoding to flac format.
-  * vorbis-tools - for encoding to ogg format.
-  * faac - for encoding to aac format (with .m4a extension).
+  * [http://www.ffmpeg.org ffmpeg] - for decoding all input multimedia files and encoding to  wma format.
+  * [http://lame.sourceforge.net lame] - for encoding to mp3 format.
+  * [http://flac.sourceforge.net flac] - for encoding to flac format.
+  * [http://www.vorbis.com vorbis-tools] - for encoding to ogg format.
+  * [http://www.audiocoding.com faac] - for encoding to aac format (with .m4a extension).
+
+== Installing ftransc == 
+
+Install dependencies on Terminal using apt-get as follows:
+{{{
+    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen
+}}}
+
+Obtain the latest released ftransc tarball version from [http://code.google.com/p/ftransc/downloads/list ftransc] website and unpack and install it as follows:
+{{{
+    tar xvzf ftransc-x.y.z.tar.gz
+    cd ftransc-x.y.z
+    sudo make uninstall \# remove older ftransc version (if any)
+    sudo make install
+}}}
+
+Now you should be able to run ftransc from terminal. You use ftransc to check if the dependencies it needs are installed or not as follows:
+{{{
+    ftransc --check
+}}}
 
 == How ftransc Works == 
 
 ftransc should be invoked/run on Terminal, typically in a syntax like 
 *ftransc options files*. ftransc will convert one file at a time and 
-followed by the next one, untill all input files are converted.
+followed by the next one, until all input files are converted.
+
+Conversion steps:
 
  # A lockfile corresponding to the input file is created, if it exists already, then the file is skipped because its already locked.
- # Then, the metadata tags are copied from the input file. Not all tags are copied, only *title*, *artist*, *album*, *genre*, *track number*, and album/song release *date/year* are copied.
- # The input file is converted to the the destination format. The input file is not changed in any way. 
+ # Then, the metadata tags are copied from the input file. Not all tags are copied, only *title*, *artist*, *album*, *genre*, *track number*, and album/song release *date/year* are copied. The character encoding used to handle metadata tags is UTF-8.
+ # The input file is converted to the the desired audio format. The input file is not changed in any way. 
  # When the second step, above, has finised successfully, the metadata tags that were copied, if any, are then inserted into the newly created file.
  # A lockfile corresponding to the input file is deleted.
  # If an option to remove the original file is specified and if the conversion process has finished successfully, the original file is deleted.
