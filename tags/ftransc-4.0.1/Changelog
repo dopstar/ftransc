@@ -1,0 +1,48 @@
+ftransc 4.0.1 (05 Apr 2011):
+	+ disable support of functionality when its dependency is not installed.
+	this prevents crashes like trying to convert with an unavailable encoder.
+
+ftransc 4.0.0 (22 Mar 2011):
+	+ Written in python, thus, 'ftransc' & 'fmetadata' merged.
+	+ added the 'extreme' quality preset.
+	+ added directory walking.
+	+ transcode via wav option removed.
+	+ added a feature to unlock prelocked files.
+
+ftransc 3.2.3 (03 Jan 2011): # unreleased
+	+ FLAC support: encode + decode + extract metadata + add metadata
+	+ polished logging.
+	+ polished code style
+	+ added the 'tiny' quality preset.
+
+ftransc 3.2.2 (24 Dec 2010): # now available at code.google.com/p/ftransc
+	+ fmetadata python script.
+	+ decode to wav
+	+ trascode via wav and direct transcode
+	+ extract audio content from video files
+	+ added uninstallation option.
+	- removed asftags, asfedit and aactags
+	- removed dependency on mid3v2, id3 and vorbiscomment
+
+ftransc 3.2.1 (22 Aug 2010):
+	+ Support for non-ASCII Unicode characters via UTF-8.
+	+ Installation via a Makefile.
+	+ Option to check dependencies.
+	+ Overwriting disabled by default, with option to enable.
+	+ If source and destination files are the same, do not proceed.
+
+ftransc 3.2 (16 Feb 2010):
+	+ corrected man page installation path.
+
+ftransc 3.1 (15 Jan 2010):
+	+ log file not created when usage is displayed.
+	+ usage modified.
+	+ print usage when no args are present.
+	+ progress status message modified to highlight file being encoded.
+
+ftransc 3.0 (24 Oct 2009):
+	+ using FFmpeg to decode any type of input audio file.
+
+ftransc 2.5 (20 Oct 2009):
+	- Removed decoding to WAV format first because temporarily consumes 
+	a lot of space and is slower.

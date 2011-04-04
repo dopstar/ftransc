@@ -1,0 +1,66 @@
+ftransc :   http://code.google.com/p/ftransc
+--------------------------------------------
+
+INFO:
+-----
+ ftransc is a python script for converting audio files 
+ from one format to another.  
+
+SUPPORTED FORMATS:
+------------------
+
+	WMA: 'Decode from' + 'Encode to' supported.
+	MP3: 'Decode from' + 'Encode to' supported.
+	OGG: 'Decode from' + 'Encode to' supported.
+	WAV: 'Decode to' + 'Encode from' supported. No metadata support.
+    M4A: 'Decode from' + 'Encode to' supported.
+	FLAC: 'Decode from' + 'Encode to' supported.
+	
+FEATURES:
+---------
+	1. Song metadata tags preserved during transcoding.
+	2. Temporary locking of file being transcoded.
+	3. Metadata support UTF-8 character set.
+	4. Files not ovewritten (unless overridden)
+	5. Extracting audio content from video files.
+	
+REQUIREMENTS:
+-------------
+ The following programs are REQUIRED and should be already installed in your 
+system: 
+	'lame', 'ffmpeg', 'vorbis-tools', 'faac', 'flac', 'python-mutagen'
+	
+INSTALLATION:
+-------------
+ 1. Install dependencies by running on Terminal:
+	'sudo apt-get install lame ffmpeg faac vorbis-tools python-mutagen flac'
+
+ 2. Installing ftransc:
+    2.1 Installing from a .tar.gz source code:
+        2.1.1 Extract the ftransc source code tar archive:
+        	'tar xzvf ftransc-1.0.tar.gz'
+             replace 1.0 with relevant version accordingly.
+        2.1.3. Change directory to the ftransc source directory:
+        	'cd ftransc-1.0/'
+        2.1.4. Run on terminal inside the ftransc source code directory:
+        	'sudo make install'
+    2.2 Installing from svn repository:
+        2.2.1 Get a working copy by svn checkout:
+            svn checkout http://code.google.com/p/ftransc/trunk ftransc-readonly
+        2.2.2 Change directory to ftransc svn working copy:
+            'cd ftransc-readonly'
+        2.2.3 Install ftransc into your system:
+            'sudo make uninstall; sudo make install'
+            
+UNINSTALLATION:
+---------------
+ Run on terminal:
+	'cd /usr/share/doc/ftransc'
+ and then:
+	'sudo make uninstall'
+USAGE:
+------
+ Type: 
+	'ftransc -h'
+ or	
+	'man ftransc'
