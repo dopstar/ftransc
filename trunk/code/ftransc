@@ -121,7 +121,7 @@ def get_metadata(files):
         artist, album, title = None, None, None
         genre, year, tracknumber = None, None, None
         ext = get_ext(f.lower())[1]
-        metadata = mutagen.File(f,easy=True)
+        metadata = mutagen.File(f, easy=True)
 
         if ext in ['.ogg', '.flac', '.mp3', '.mp4', '.aac', '.m4a']:
             if metadata.has_key('artist'):
@@ -181,8 +181,18 @@ def check_deps(check=False):
     the results are printed out on the screen if check=True or are redirected 
     to a log file if check=False
     """
-    deps = ('lame', 'ffmpeg', 'flac', 'oggenc', 'faac', 'mutagen-inspect')
-    for d in deps:
+
+    # deps = {dep1: [audio formats needing it], dep2: [audio formats needing it]}
+    deps = {
+            'mutagen-inspect'   : [],
+            'ffmpeg'            : ['mp3', 'ogg', 'wma', 'm4a', 'flac', 'wav'],
+            'lame'              : ['mp3'],
+            'flac'              : ['flac'],
+            'faac'              : ['m4a'],
+            'oggenc'            : ['ogg'],
+            }
+
+    for d in deps.keys():
         pkg = sub.Popen(["which", d], stdout=sub.PIPE).communicate()[0].strip() 
         if check:
             print d + '...',
@@ -198,6 +208,8 @@ def check_deps(check=False):
                 msg = "_______ %s not installed _______" % d
                 print red + msg + nc + "."
                 log_file.write(msg + "\n")
+                for fmt in deps[d]:
+                    quality_presets.pop(fmt)
     if check:
         raise SystemExit(0)
 
@@ -339,7 +351,7 @@ converters = {
         }
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="%prog [options] [files]", version="4.0.0")
+    parser = optparse.OptionParser(usage="%prog [options] [files]", version="4.0.1")
     parser.add_option('-f', '--format', type=str, default='mp3', help='audio format to convert to')
     parser.add_option('-q', '--quality', type=str, default='normal', help='audio quality preset')
     parser.add_option('-c', '--check', dest='check', action='store_true', help='check dependencies')
@@ -381,6 +393,8 @@ if __name__ == "__main__":
         log_file = open('/tmp/ftransc.log','w')
         null_file = open('/dev/null','w')
     check_deps(opt.check)
+    if not quality_presets.has_key(opt.format):
+        raise SystemExit("%s___ %s ___%s format not supported. required dependency not installed." % (red, opt.format, nc))
 
     # go through each file: 1. extract tags, 2. convert, and 3. insert tags
     count = 0

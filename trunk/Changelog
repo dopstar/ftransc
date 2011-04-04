@@ -1,3 +1,7 @@
+ftransc 4.0.1 (05 Apr 2011):
+	+ disable support of functionality when its dependency is not installed.
+	this prevents crashes like trying to convert with an unavailable encoder.
+
 ftransc 4.0.0 (22 Mar 2011):
 	+ Written in python, thus, 'ftransc' & 'fmetadata' merged.
 	+ added the 'extreme' quality preset.
