@@ -46,9 +46,9 @@ INSTALLATION:
         	'sudo make install'
     2.2 Installing from svn repository:
         2.2.1 Get a working copy by svn checkout:
-            svn checkout http://code.google.com/p/ftransc/trunk ftransc-readonly
+            svn checkout http://code.google.com/p/ftransc/trunk ftransc
         2.2.2 Change directory to ftransc svn working copy:
-            'cd ftransc-readonly'
+            'cd ftransc'
         2.2.3 Install ftransc into your system:
             'sudo make uninstall; sudo make install'
             
