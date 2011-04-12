@@ -1,6 +1,10 @@
 #!/usr/bin/python
-# Audio converter script
-# Copyright 2007-2011 Mkhanyisi Madlavana
+"""
+ftransc is a script bundles up utilities for audio conversion.
+"""
+
+#Author: Mkhanyisi Madlavana 
+#website: http://code.google.com/p/ftransc
 
 from os import remove, chdir, getcwd, walk
 from os.path import exists, isfile, isdir
@@ -17,6 +21,9 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 
 class MetaTag(object):
+    """
+    handles tag extraction and insertion into and/or from audio files
+    """
     __tag_mapping = {
         '.wma': {
             'artist': 'Author', 'album': 'WM/AlbumTitle', 'title': 'Title', 
@@ -82,9 +89,8 @@ class MetaTag(object):
                 continue
             if ext == '.mp3':
                 metadata[self.__tag_mapping[ext][tag]] = self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])
-           
-            elif ext == '.m4a':
-                if tag == 'tracknumber':
+            elif ext in ('.wma', '.ogg', '.flac', '.m4a'):
+                if tag == 'tracknumber' and ext == '.m4a':
                     try:
                         trkn = [int(i) for i in value.split('/')]
                         metadata[self.__tag_mapping[ext][tag]] = [(trkn[0], trkn[1])]
@@ -92,9 +98,6 @@ class MetaTag(object):
                         metadata[self.__tag_mapping[ext][tag]] = [(trkn[0], 0)]
                 else:
                     metadata[self.__tag_mapping[ext][tag]] = [u'%s' % value]
-
-            elif ext in ('.wma', '.ogg', '.flac'):
-                metadata[self.__tag_mapping[ext][tag]] = [u'%s' % value]
         metadata.save()
   
 def get_ext(f):
@@ -104,12 +107,9 @@ def get_ext(f):
     ('mysong','.mp3')
     """
     idx = f.rfind('.')
-    if idx < 0:
-        return (f, None)
-    else:
-        return (f[:idx], f[idx:])
+    return (f, None) if idx < 0 else (f[:idx], f[idx:])
 
-def check_deps(check=False,log=None):
+def check_deps(check=False, log=None):
     """
     checks whether all dependencies for this script are installed or not.
     """
@@ -124,18 +124,14 @@ def check_deps(check=False,log=None):
     for d in deps.keys():
         pkg = Popen(["which", d], stdout=PIPE).communicate()[0].strip() 
         if check:
-            print d + '...',
-            if not pkg:
-                print red + "not installed" + nc + "."
-            else:
-                print green + "installed" + nc + "."
+            print d + '...' + rd + " not installed" + nc if not pkg else d + '...' + gr + " installed" + nc
         else:
             log.write("[%s]" % strftime('%H:%M:%S'))
             if pkg:
                 log.write("%s\n" % pkg)
             else:
                 msg = "_______ %s not installed _______" % d
-                print red + msg + nc + "."
+                print rd + msg + nc + "."
                 log.write(msg + "\n")
                 for fmt in deps[d]:
                     supported_formats.remove(fmt)
@@ -198,14 +194,17 @@ def convert_to_flac(filename, ext, stderr_out, preset=None):
     return convert(stderr_out, cmdline1=cmd)
 
 def convert(stderr_out, cmdline1=None, cmdline2=None):
+    """
+    executes audio conversion pipeline command
+    """
     if cmdline1 is not None and cmdline2 is not None:
         p1 = Popen(cmdline1, stdout=PIPE, stderr=stderr_out)
         p2 = Popen(cmdline2, stdin=p1.stdout, stdout=PIPE, stderr=stderr_out)
-        output = p2.communicate()
+        p2.communicate()
         return not p2.returncode
     elif cmdline1 is not None and cmdline2 is None:
         p1 = Popen(cmdline1, stdout=PIPE, stderr=stderr_out)
-        output = p1.communicate()
+        p1.communicate()
         return not p1.returncode
     else:
         raise SystemExit("Error: unexpected arguments on: convert()")
@@ -264,6 +263,12 @@ converters = {
         }
 
 if __name__ == "__main__":
+    rd = "\033[1;31m"
+    gr = "\033[1;32m"
+    yl = "\033[1;33m"
+    bl = "\033[1;34m"
+    pk = "\033[1;35m"
+    nc = "\033[0m"
     parser = OptionParser(usage="%prog [options] [files]", version="4.0.2")
     parser.add_option('-f', '--format', type=str, default='mp3', help='audio format to convert to')
     parser.add_option('-q', '--quality', type=str, default='normal', help='audio quality preset')
@@ -275,94 +280,82 @@ if __name__ == "__main__":
     parser.add_option('--directory', dest="walk", default=None, type=str, help='convert all files inside the given directory')
     opt, files = parser.parse_args()
 
+    with open('/tmp/ftransc.log','w') as log:
+        check_deps(opt.check, log=log)
     fmt = opt.format.lower()
     qual = opt.quality.lower()
-
+    if fmt in ("mp4", "m4a", "aac"): 
+        fmt = "m4a"
+    if fmt not in supported_formats:
+        raise SystemExit("%s%s%s is not a supported format" % (rd, fmt, nc))
     if len(files) < 1 and opt.walk is None and opt.check is None:
         raise SystemExit("ftransc: no input file")
-    
     if opt.walk is not None:
         walker = walk(opt.walk)
         dest_dir, dummy, files = walker.next()
         pwd = getcwd()
         chdir(dest_dir)
-        
-    rd = "\033[1;31m"
-    gr = "\033[1;32m"
-    bl = "\033[1;34m"
-    pk = "\033[1;35m"
-    nc = "\033[0m"
-    
-    if fmt in ("mp4","m4a","aac"): fmt = "m4a"
-    if opt.decode: fmt = "wav"
-    if fmt not in supported_formats: raise SystemExit("%s%s%s is not a supported format" % (rd, fmt, nc))
+    if opt.decode: 
+        fmt = "wav"
     if fmt != 'wav':
         if qual not in quality_presets[fmt]:
-            print "%s%s%s is not a valid quality preset, using %s%s%s." % (rd, qual, nc, gr, 'normal', nc)
+            print "%s%s%s invalid quality preset, using %s%s%s." % (rd, qual, nc, gr, 'normal', nc)
             qual = "normal"
-    with open('/tmp/ftransc.log','w') as log: check_deps(opt.check, log=log)
-
-    # on each file: 1. extract tags, 2. audio convert, and 3. insert tags
-    c = 0
     total = len(files)
-    try: preset = quality_presets[fmt][qual]
-    except: preset = None
-    for ifile in files:
+    try: 
+        preset = quality_presets[fmt][qual]
+    except: 
+        preset = None
+    for c, ifile in enumerate(files):
+        tic = time()
         log = open('/tmp/ftransc.log','a')
         null = open('/dev/null','w')
-        c += 1
-        ofile = get_ext(ifile)[0] + "." + fmt
-        
+        ofile = get_ext(ifile)[0] + "." + fmt 
         if ofile == ifile:
-            print "[%s%d/%d%s]: %s%s%s: same input file & output file" % (pk, c, total, nc, rd, ifile, nc)
+            print "%s%d/%d%s | %s%s%s | input = output | %sskipped%s" % (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
             continue
         if not exists(ifile):
-            print "[%s%d/%d%s]: %s%s%s does not exist" % (pk, c, total, nc, rd, ifile, nc)
+            print "%s%d/%d%s | %s%s%s | %sdoes not exist%s" % (pk, c + 1, total, nc, bl, ifile, nc, rd, nc)
             continue
         if isfile(ofile) and not opt.overwrite:
-            print "[%s%d/%d%s]: skipping %s%s%s: overwrite disabled" % (pk, c, total, nc, rd, ifile, nc)
+            print "%s%d/%d%s | %s%s%s | use '-w' to overwrite | %sskipped%s" % (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
             continue
         if isdir(ifile) and opt.walk is None:
-            print "[%s%d/%d%s]: skipping directory %s%s%s, use '--directory'" % (pk, c, total, nc, rd, ifile, nc)
+            print "%s%d/%d%s | %s%s%s |  use '--directory' for folders | %sskipped%s" % (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
             continue
-
         #_____________ lockfile creation ________________
         swp_file = ".%s.swp" % ifile
         if isfile(swp_file) and not opt.unlock:
-                print "%s%d/%d%s | %s%s%s | %slocked%s" % (pk, c, total, nc, bl, ifile, nc, rd, nc)
-                continue
+            print "%s%d/%d%s | %s%s%s | use '-u' to unlock | %sskipped%s" % (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
+            continue
         elif not isfile(swp_file):
             try:
-                with open(swp_file, 'w'): pass
+                with open(swp_file, 'w'): 
+                    pass
             except IOError:
                 raise SystemExit("You %sdo not have permissions%s to write to this folder" % (rd, nc))
-
         #______________ extract metadata ________________
         try:
             metadata = MetaTag(ifile)
         except IOError:
-            print "%s%d/%d%s | %s%s%s | %s%Unreadable%s"  % (pk, c, total, nc, bl, ifile, nc, rd, nc)
+            print "%s%d/%d%s | %s%s%s | %sUnreadable%s"  % (pk, c + 1, total, nc, bl, ifile, nc, rd, nc)
             log.write('Fail\n')
             dummy = remove(swp_file)
             continue
-        
         #___________ audio convert ______________
         ifilename, in_ext = get_ext(ifile)
         log.write("[%s]converting '%s' to %s format ... " % (strftime('%H:%M:%S'), ifile, fmt.upper()))
-        tic = time()
         if converters[fmt](ifilename, in_ext, null, preset=preset):
-            toc = time()
-            print "%s%d/%d%s | to %s | %s%s%s | %sSuccess%s | %d seconds" % (pk, c, total, nc, fmt.upper(), bl, ifile, nc, gr, nc, toc - tic)
+            print "%s%d/%d%s | to %s | %s%s%s | %sSuccess%s" % (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc, gr, nc),
             log.write('OK\n')
             if opt.remove: dummy = remove(ifile)
             dummy = remove(swp_file)
         else:
-            print "%s%d/%d%s | to %s | %s%s%s | %sFail%s" % (pk, c, total, nc, fmt.upper(), bl, ifile, nc, rd, nc)
+            print "%s%d/%d%s | to %s | %s%s%s | %sFail%s" % (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc, rd, nc)
             log.write('Fail\n')
             dummy = remove(swp_file)
             del metadata
             continue
-
         #___________ insert metadata to new audio file ___________
         try:
             log.write("[%s]inserting metadata to '%s' ... " % (strftime('%H:%M:%S'), ofile))
@@ -373,3 +366,5 @@ if __name__ == "__main__":
         del metadata
         log.close()
         null.close()
+        toc = time()
+        print " | %d seconds" % (toc - tic)
