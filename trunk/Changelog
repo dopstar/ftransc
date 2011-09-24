@@ -1,3 +1,8 @@
+ftransc 4.0.4 (25 Sep 2011):
+	+ added notify-send summary notification
+	+ fixed the issue with left over temporary .wav files when converting to
+	FLAC format.
+
 ftransc 4.0.3 (17 Apr 2011):
 	+ no need to 'cd' to folder first before running ftransc.
 	+ /tmp/ftransc.log is not created anymore.
