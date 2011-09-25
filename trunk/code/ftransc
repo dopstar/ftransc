@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-ftransc is a script bundles up utilities for audio conversion.
+ftransc is a script that bundles up utilities for audio conversion.
 """
 
 from os.path import (
@@ -17,6 +17,7 @@ from os import remove, chdir, getcwd, walk, system, environ
 from subprocess import Popen, PIPE
 from optparse import OptionParser
 from time import time
+from urllib import urlopen
 
 from mutagen import File
 from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC
@@ -120,10 +121,9 @@ class MetaTag(object):
         inserts tags tags into an audio file.
         """        
         ext = get_ext(output_file)[1].lower()
-        try:
-            tags = self.__opener[ext](output_file)
-        except KeyError:
+        if ext not in self.__opener:
             return 1
+        tags = self.__opener[ext](output_file)
         for tag, value in self.tags.items():
             if value is None:
                 continue
@@ -149,7 +149,7 @@ def get_ext(f):
     ('mysong','.mp3')
     """
     idx = f.rfind('.')
-    return (f, "") if idx < 0 else (f[:idx], f[idx:])
+    return (f, "") if idx <= 0 else (f[:idx], f[idx:])
 
 def check_deps(check=False):
     """
@@ -248,6 +248,33 @@ def convert(stderr_out, cmdline1=None, cmdline2=None):
     else:
         raise SystemExit("Error: unexpected arguments on: convert()")
 
+def upgrade_version(current_version):
+    """
+    upgrades to the current available version
+    """
+    
+    trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
+    tmp_dir = 'tmp-ftransc_upgrade-tmp'
+    if environ['USER'] != 'root':
+        raise SystemExit('try using "sudo", you have to be "root" on this one.')
+    target  = '%s/version' % trunk_url
+    latest  = map(int, urlopen(target).read().strip().split('.'))
+    current = map(int, current_version.split('.'))
+
+    if latest > current:
+        cmd = ['svn', 'export', trunk_url, tmp_dir]
+        with open('/dev/null', 'w') as devnull:
+            p1 = Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            chdir(tmp_dir)
+            cmd = ['make', 'uninstall']
+            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            cmd = ['make', 'install']
+            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            chdir('..')
+            cmd = ['rm', '-r', '-f', tmp_dir]
+            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+    raise SystemExit('done')
+
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a'])
 quality_presets = {
         "mp3": 
@@ -306,16 +333,14 @@ converters = {
         }
 
 if __name__ == "__main__":
-    if environ['USER'] == 'root':
-        raise SystemExit('It is not safe to run ftransc as a root.')
-
+    version = '4.0.5'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
     bl = "\033[1;34m"
     pk = "\033[1;35m"
     nc = "\033[0m"
-    parser = OptionParser(usage="%prog [options] [files]", version="4.0.4")
+    parser = OptionParser(usage="%prog [options] [files]", version=version)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
     parser.add_option('-q', '--quality', type=str, default='normal', 
@@ -332,7 +357,17 @@ if __name__ == "__main__":
             help='unlock a locked file and convert')
     parser.add_option('--directory', dest="walk", type=str, 
             help='convert all files inside the given directory')
+    parser.add_option('--upgrade', action='store_true', default=False,
+            help='upgrade to the latest available version')
     opt, files = parser.parse_args()
+    
+    if opt.upgrade:
+        upgrade_version(version)
+        
+    
+    if environ['USER'] == 'root':
+        raise SystemExit('It is not safe to run ftransc as a root.')
+    
     
     files = list(set(files)) #remove duplicates
     files.sort()
@@ -464,4 +499,3 @@ if __name__ == "__main__":
                             (total, fmt.upper(), total - fails, fails)
                 ],
                 stdout=PIPE).communicate()
-

@@ -1,3 +1,6 @@
+ftransc 4.0.5 (25 Sep 2011):
+	+ added the --upgrade option.
+
 ftransc 4.0.4 (25 Sep 2011):
 	+ added notify-send summary notification
 	+ fixed the issue with left over temporary .wav files when converting to
