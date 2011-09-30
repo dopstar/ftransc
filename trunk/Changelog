@@ -1,3 +1,9 @@
+ftransc 4.0.6 (30 Sep 2011):
+	+ now using os.path.splitext() instead of a custom built function.
+	+ printing summary statistics of time taken to encode all files and
+	average time taken per file.
+	+ added 'nautilus scripts' functionality.
+
 ftransc 4.0.5 (25 Sep 2011):
 	+ added the --upgrade option.
 

@@ -4,20 +4,22 @@ ftransc is a script that bundles up utilities for audio conversion.
 """
 
 from os.path import (
-        basename, 
-        dirname, 
-        exists, 
+        sep,
         isabs,
         isdir, 
+        exists, 
         isfile, 
+        dirname, 
+        basename, 
         realpath,
-        sep,
+        splitext,
 )
 from os import remove, chdir, getcwd, walk, system, environ
 from subprocess import Popen, PIPE
 from optparse import OptionParser
 from time import time
 from urllib import urlopen
+from sys import argv
 
 from mutagen import File
 from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC
@@ -38,7 +40,7 @@ class MetaTag(object):
             'title'         : 'Title', 
             'genre'         : 'WM/Genre', 
             'year'          : 'WM/Year', 
-            'tracknumber'   : 'WM/TrackNumber'
+            'tracknumber'   : 'WM/TrackNumber',
         },
         '.mp3'  : {
             'artist'        : 'TPE1', 
@@ -106,7 +108,7 @@ class MetaTag(object):
         extracts metadata tags from the audio file
         """
         tags = File(self.input_file, easy=True)
-        ext = get_ext(self.input_file)[1].lower()
+        ext = splitext(self.input_file)[1].lower()
         if ext in ('.ogg', '.flac', '.mp3', '.mp4', '.acc', '.m4a'):
             for tag in self.tags:
                 if tag in tags:
@@ -120,7 +122,7 @@ class MetaTag(object):
         """
         inserts tags tags into an audio file.
         """        
-        ext = get_ext(output_file)[1].lower()
+        ext = splitext(output_file)[1].lower()
         if ext not in self.__opener:
             return 1
         tags = self.__opener[ext](output_file)
@@ -142,15 +144,6 @@ class MetaTag(object):
                     tags[self.__tag_mapping[ext][tag]] = [u'%s' % value]
         tags.save()
   
-def get_ext(f):
-    """ 
-    returns (filename_without_ext, ext)
-    eg: 'mysong.mp3' will be returned as 
-    ('mysong','.mp3')
-    """
-    idx = f.rfind('.')
-    return (f, "") if idx <= 0 else (f[:idx], f[idx:])
-
 def check_deps(check=False):
     """
     checks whether all dependencies for this script are installed or not.
@@ -333,7 +326,7 @@ converters = {
         }
 
 if __name__ == "__main__":
-    version = '4.0.5'
+    version = '4.0.6'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
@@ -368,6 +361,8 @@ if __name__ == "__main__":
     if environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as a root.')
     
+    if 'convert to ' in argv[0]:
+        opt.format = argv[0].split()[-1]
     
     files = list(set(files)) #remove duplicates
     files.sort()
@@ -402,11 +397,12 @@ if __name__ == "__main__":
 
     total = len(files)
     fails = 0
+    times = []
     for c, in_tuple in enumerate([(dirname(x), basename(x)) for x in files]):
         new_dir, ifile = in_tuple
         tic = time()
         null = open('/dev/null','w')
-        ofile = get_ext(ifile)[0] + "." + fmt 
+        ofile = splitext(ifile)[0] + "." + fmt 
         if new_dir:
             if not isabs(new_dir):
                 new_dir = home + sep + new_dir
@@ -463,7 +459,7 @@ if __name__ == "__main__":
             fails += 1
             continue
         #___________ audio convert ______________
-        ifilename, in_ext = get_ext(ifile)
+        ifilename, in_ext = splitext(ifile)
         system('printf "%s%d/%d%s | to %s | %s%s%s ... "' % \
                 (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc))
         if converters[fmt](ifilename, in_ext, null, preset=preset):
@@ -487,6 +483,7 @@ if __name__ == "__main__":
         del metadata
         null.close()
         toc = time()
+        times.append(toc - tic)
         print "| %d sec" % (toc - tic)
 
     
@@ -499,3 +496,12 @@ if __name__ == "__main__":
                             (total, fmt.upper(), total - fails, fails)
                 ],
                 stdout=PIPE).communicate()
+    
+    print '_' * 80
+    print 'average: %d sec per song' % int(sum(times)/(1.0*len(times)))
+    hr = int(sum(times)  / 3600)
+    mn = int((sum(times) % 3600) / 60)
+    sc = int(sum(times)  % 3600  % 60)
+    print 'total: %d songs converted in %d hours, %d minutes and %d seconds' %\
+            (total, hr, mn, sc)
+    print '_' * 80
