@@ -29,6 +29,7 @@ from mutagen.mp4 import Open as open_mp4
 from mutagen.asf import Open as open_asf
 from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
+from mutagen.musepack import Open as open_mpc
 
 class MetaTag(object):
     """
@@ -74,7 +75,15 @@ class MetaTag(object):
             'genre'         : 'genre', 
             'year'          : 'date', 
             'tracknumber'   : 'tracknumber',
-       }
+        },
+        '.mpc'  : {
+            'artist'        : 'Artist', 
+            'album'         : 'Album', 
+            'title'         : 'Title', 
+            'genre'         : 'Genre', 
+            'year'          : 'Year', 
+            'tracknumber'   : 'Track',
+        },
     }
     __id3_mapping = {
             'artist'        : TPE1, 
@@ -89,7 +98,8 @@ class MetaTag(object):
             '.wma'          : open_asf, 
             '.ogg'          : open_ogg, 
             '.m4a'          : open_mp4, 
-            '.flac'         : open_flac, 
+            '.flac'         : open_flac,
+            '.mpc'          : open_mpc,
    }
 
     def __init__(self, input_file):
@@ -133,7 +143,7 @@ class MetaTag(object):
             if ext == '.mp3':
                 tags[self.__tag_mapping[ext][tag]] = \
                 self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])
-            elif ext in ('.wma', '.ogg', '.flac', '.m4a'):
+            elif ext in ('.wma', '.ogg', '.flac', '.m4a', '.mpc'):
                 if tag == 'tracknumber' and ext == '.m4a':
                     try:
                         trkn = [int(i) for i in value.split('/')]
@@ -156,6 +166,7 @@ def check_deps(check=False):
             'flac'              : ['flac'],
             'faac'              : ['m4a'],
             'oggenc'            : ['ogg'],
+            'mppenc'            : ['mpc'],
             }
     for d in deps:
         pkg = Popen(["which", d], stdout=PIPE).communicate()[0].strip() 
@@ -226,6 +237,15 @@ def convert_to_flac(filename, ext, stderr_out, preset=None):
     cmd.extend(["-f", "-o", "./" + filename + ".flac", filename + ".wav"])
     return convert(stderr_out, cmdline1=cmd)
 
+def convert_to_mpc(filename, ext, stderr_out, preset=''):
+    """
+    converts input track into Musepack audio format
+    """
+    cmd1 = ["ffmpeg", "-y", "-i", filename + ext, "-f", "wav", "/dev/stdout"]
+    cmd2 = ("mppenc " + preset).split()
+    cmd2.extend(["-", "./" + filename + ".mpc"])
+    return convert(stderr_out, cmdline1=cmd1, cmdline2=cmd2)
+
 def convert(stderr_out, cmdline1=None, cmdline2=None):
     """
     executes audio conversion pipeline command
@@ -269,7 +289,7 @@ def upgrade_version(current_version):
             Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
     raise SystemExit('done')
 
-supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a'])
+supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {
         "mp3": 
         {
@@ -316,6 +336,15 @@ quality_presets = {
             "low"       : "-3",
             "tiny"      : "--fast",
             },
+        "mpc":
+        {
+            "insane"    : "--braindead --overwrite",
+            "extreme"   : "--insane --overwrite",
+            "high"      : "--extreme --overwrite",
+            "normal"    : "--normal --overwrite",
+            "low"       : "--telephone --overwrite",
+            "tiny"      : "--quality 1.00 --overwrite",
+            },
 }
 converters = {
         "mp3"   : convert_to_mp3, 
@@ -324,10 +353,11 @@ converters = {
         "wma"   : convert_to_wma, 
         "wav"   : convert_to_wav, 
         "flac"  : convert_to_flac,
+        "mpc"   : convert_to_mpc,
         }
 
 if __name__ == "__main__":
-    version = '4.1.0'
+    version = '4.1.1'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
@@ -357,6 +387,8 @@ if __name__ == "__main__":
             help='overwrite destination file if it exists already')
     parser.add_option('-u', '--unlock', dest='unlock', action='store_true', 
             help='unlock a locked file and convert')
+    parser.add_option('-n', '--no-tags', dest='no_tags', action='store_true', 
+            default=False, help='Disable metadata support')
     parser.add_option('--directory', dest="walk", type=str, 
             help='convert all files inside the given directory')
     parser.add_option('--upgrade', action='store_true', default=False,
@@ -365,6 +397,8 @@ if __name__ == "__main__":
     
     if opt.upgrade:
         upgrade_version(version)
+
+    no_tags = opt.no_tags
         
     
     if environ['USER'] == 'root':
@@ -382,6 +416,8 @@ if __name__ == "__main__":
         check_deps(check=True)
     if fmt in ("mp4", "m4a", "aac"): 
         fmt = "m4a"
+    if fmt in ("mpc", "musepack"):
+        fmt = "mpc"
     if fmt not in supported_formats:
         raise SystemExit("%s%s%s is not a supported format" % (rd, fmt, nc))
     if len(files) < 1 and opt.walk is None:
@@ -489,9 +525,9 @@ if __name__ == "__main__":
         try:
             if not no_tags:
                 metadata.insert(ofile)
+                del metadata
         except:
             pass
-        del metadata
         null.close()
         toc = time()
         times.append(toc - tic)
@@ -507,12 +543,14 @@ if __name__ == "__main__":
                             (total, fmt.upper(), total - fails, fails)
                 ],
                 stdout=PIPE).communicate()
-    
-    print '_' * 80
-    print 'average: %d sec per song' % int(sum(times)/(1.0*len(times)))
-    hr = int(sum(times)  / 3600)
-    mn = int((sum(times) % 3600) / 60)
-    sc = int(sum(times)  % 3600  % 60)
-    print 'total: %d songs converted in %d hours, %d minutes and %d seconds' %\
+
+    if times:
+        print '_' * 80
+        print 'average: %d sec per song' % int(sum(times)/(1.0*len(times)))
+        hr = int(sum(times)  / 3600)
+        mn = int((sum(times) % 3600) / 60)
+        sc = int(sum(times)  % 3600  % 60)
+        print 'total: %d songs converted in %d hours, %d minutes and %d seconds' %\
             (total, hr, mn, sc)
-    print '_' * 80
+        print '_' * 80
+

@@ -4,7 +4,7 @@ import os
 import sys
 from PyQt4 import QtCore, QtGui
 
-version = '4.1.0'
+version = '4.1.1'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -30,11 +30,12 @@ class Window(QtGui.QDialog):
         self.codec_combobox = QtGui.QComboBox()
         self.codec_combobox.addItem("AAC")
         self.codec_combobox.addItem("FLAC")
+        self.codec_combobox.addItem("MPC")
         self.codec_combobox.addItem("MP3")
         self.codec_combobox.addItem("OGG")
         self.codec_combobox.addItem("WAV")
         self.codec_combobox.addItem("WMA")
-        self.codec_combobox.setCurrentIndex(2)
+        self.codec_combobox.setCurrentIndex(3)
         
         quality_label = QtGui.QLabel("Quality:")
         self.quality_combobox = QtGui.QComboBox()
@@ -77,7 +78,8 @@ class Window(QtGui.QDialog):
 
     def add_files(self):
         filt = "All Files (*)";
-        filt += ";;Audio Files (*.mp3 *.wma *.aac *.mp4 *.m4a *.flac *.ogg *.wav)"
+        filt += ";;Audio Files (*.mp3 *.wma *.aac *.mp4 *.m4a *.flac *.ogg"
+        filt += " *.mpc *.mka *.mp+ *.ape *.wv *.wav *.aiff)"
         filt += ";;Video Files (*.avi *.flv *.mpg *.mpeg *.vob *.divx *.mkv *.mp4)"
         files = QtGui.QFileDialog.getOpenFileNames(self,
                                                    'Add files to convert',
@@ -99,12 +101,12 @@ class Window(QtGui.QDialog):
         audio_quality = str(self.quality_combobox.currentText()).lower()
         for row in xrange(row_count):
             status = QtGui.QTableWidgetItem('Scheduled')
-            self.filesTable.setItem(row, 1, status)
+            self.filesTable.setItem(0, 1, status)
             self.filesTable.repaint()
         for row in xrange(row_count):
-            filename = self.filesTable.item(row, 0).text()
-            status = QtGui.QTableWidgetItem('Converting')
-            self.filesTable.setItem(row, 1, status)
+            filename = self.filesTable.item(0, 0).text()
+            status = QtGui.QTableWidgetItem('Converting...')
+            self.filesTable.setItem(0, 1, status)
             self.filesTable.repaint()
             self.filesTable.repaint()
             
@@ -117,10 +119,12 @@ class Window(QtGui.QDialog):
             if self.unlock_checkbox.isChecked():
                 opts += ' --unlock'
 
-            os.system('ftransc %s "%s" > /dev/null 2>&1' % (opts, filename))
-            status = QtGui.QTableWidgetItem('Done')
-            self.filesTable.setItem(row, 1, status)
             self.filesTable.repaint()
+            os.system('ftransc %s "%s" > /dev/null 2>&1' % (opts, filename))
+            self.filesTable.removeRow(0)
+            self.filesTable.repaint()
+
+
 
     def createFilesTable(self):
         self.filesTable = QtGui.QTableWidget(0, 2) 

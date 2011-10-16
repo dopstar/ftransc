@@ -1,3 +1,7 @@
+ftransc 4.1.1 (16 Oct 2011):
+	+ added musepack audio format support.
+	+ added the -n / --no-tags option.
+
 ftransc 4.1.0 (16 Oct 2011):
 	+ added ftransc GUI, 'ftransc_qt'.
 	+ Explicitly drop support for python-mutagen versions older than 1.17.
