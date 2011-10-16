@@ -21,6 +21,7 @@ from time import time
 from urllib import urlopen
 from sys import argv
 
+import mutagen
 from mutagen import File
 from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC
 from mutagen.mp3 import Open as open_mp3
@@ -326,13 +327,21 @@ converters = {
         }
 
 if __name__ == "__main__":
-    version = '4.0.6'
+    version = '4.1.0'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
     bl = "\033[1;34m"
     pk = "\033[1;35m"
     nc = "\033[0m"
+
+    no_tags = False
+    if float(mutagen.version_string) < 1.17:
+        print yl + "Warning:" + nc + \
+                " your version of python-mutagen is older than version 1.17." +\
+                "\nAll metadata tags will be lost.\n"
+        no_tags = True
+    
     parser = OptionParser(usage="%prog [options] [files]", version=version)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
@@ -451,7 +460,8 @@ if __name__ == "__main__":
                         (rd, nc))
         #______________ extract metadata ________________
         try:
-            metadata = MetaTag(ifile)
+            if not no_tags:
+                metadata = MetaTag(ifile)
         except IOError:
             print "%s%d/%d%s | %s%s%s | %sUnreadable%s"  % \
                     (pk, c + 1, total, nc, bl, ifile, nc, rd, nc)
@@ -477,9 +487,10 @@ if __name__ == "__main__":
             continue
         #___________ insert metadata to new audio file ___________
         try:
-            metadata.insert(ofile)
+            if not no_tags:
+                metadata.insert(ofile)
         except:
-            print "failed inserting metadata to: %s" % ofile
+            pass
         del metadata
         null.close()
         toc = time()
