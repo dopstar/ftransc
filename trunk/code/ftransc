@@ -112,6 +112,8 @@ class MetaTag(object):
                 'genre'         : None, 
                 'tracknumber'   : None
         }
+        self.exts = ['.ogg', '.mp3', '.flac', '.mp4', '.aac', '.m4a',
+                               '.mpc', '.wma']
         self.extract()
     
     def extract(self):
@@ -120,7 +122,7 @@ class MetaTag(object):
         """
         tags = File(self.input_file, easy=True)
         ext = splitext(self.input_file)[1].lower()
-        if ext in ('.ogg', '.flac', '.mp3', '.mp4', '.acc', '.m4a'):
+        if ext != '.wma' and ext in self.exts:
             for tag in self.tags:
                 if tag in tags:
                     self.tags[tag] = tags[tag][0]
@@ -143,7 +145,7 @@ class MetaTag(object):
             if ext == '.mp3':
                 tags[self.__tag_mapping[ext][tag]] = \
                 self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])
-            elif ext in ('.wma', '.ogg', '.flac', '.m4a', '.mpc'):
+            elif ext in self.exts and ext != '.mp3':
                 if tag == 'tracknumber' and ext == '.m4a':
                     try:
                         trkn = [int(i) for i in value.split('/')]
@@ -357,7 +359,7 @@ converters = {
         }
 
 if __name__ == "__main__":
-    version = '4.1.1'
+    version = '4.1.2'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
