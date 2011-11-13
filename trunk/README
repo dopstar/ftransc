@@ -6,15 +6,15 @@ INFO:
  ftransc is a python script for converting audio files 
  from one format to another.  
 
-SUPPORTED FORMATS:
-------------------
-
+SUPPORTED AUDIO FORMATS:
+------------------------
 	WMA: 'Decode from' + 'Encode to' supported.
 	MP3: 'Decode from' + 'Encode to' supported.
 	OGG: 'Decode from' + 'Encode to' supported.
 	WAV: 'Decode to' + 'Encode from' supported. No metadata support.
-    M4A: 'Decode from' + 'Encode to' supported.
+	M4A: 'Decode from' + 'Encode to' supported.
 	FLAC: 'Decode from' + 'Encode to' supported.
+	MPC: 'Decode from' + 'Encode to' supported.
 	
 FEATURES:
 ---------
@@ -28,12 +28,12 @@ REQUIREMENTS:
 -------------
  The following programs are REQUIRED and should be already installed in your 
 system: 
-	'lame', 'ffmpeg', 'vorbis-tools', 'faac', 'flac', 'python-mutagen'
+	'lame', 'ffmpeg', 'vorbis-tools', 'faac', 'flac', 'python-mutagen', 'mppenc'
 	
 INSTALLATION:
 -------------
  1. Install dependencies by running on Terminal:
-	'sudo apt-get install lame ffmpeg faac vorbis-tools python-mutagen flac'
+	'sudo apt-get install lame ffmpeg faac vorbis-tools python-mutagen flac mppenc'
 
  2. Installing ftransc:
     2.1 Installing from a .tar.gz source code:
@@ -63,4 +63,4 @@ USAGE:
  Type: 
 	'ftransc -h'
  or	
-	'man ftransc'
+	'man ftransc'`

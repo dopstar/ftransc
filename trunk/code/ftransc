@@ -31,6 +31,8 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
+VERSION = '4.1.3'
+
 class MetaTag(object):
     """
     handles tag extraction and insertion into and/or from audio files
@@ -359,7 +361,6 @@ converters = {
         }
 
 if __name__ == "__main__":
-    version = '4.1.2'
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
@@ -374,7 +375,7 @@ if __name__ == "__main__":
                 "\nAll metadata tags will be lost.\n"
         no_tags = True
     
-    parser = OptionParser(usage="%prog [options] [files]", version=version)
+    parser = OptionParser(usage="%prog [options] [files]", version=VERSION)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
     parser.add_option('-q', '--quality', type=str, default='normal', 
@@ -398,7 +399,7 @@ if __name__ == "__main__":
     opt, files = parser.parse_args()
     
     if opt.upgrade:
-        upgrade_version(version)
+        upgrade_version(VERSION)
 
     no_tags = opt.no_tags
         
