@@ -31,7 +31,7 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.5'
+VERSION = '4.1.6'
 
 class MetaTag(object):
     """

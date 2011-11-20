@@ -11,6 +11,7 @@ install:
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ OGG
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ FLAC
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ WAV
+	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ MPC
 	chown ${SUDO_USER}:${SUDO_USER} ~/.gnome2/nautilus-scripts/ftransc/
 uninstall:
 	rm -f /usr/local/bin/ftransc

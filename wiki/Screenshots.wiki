@@ -1,7 +1,13 @@
 #summary ftransc screenshots
 
 ftransc GUI front-end, *ftransc_qt*:
+
 http://mkanyicy.21publish.com/pub/mkanyicy/ftransc_gui.png
 
+----
+
 ftransc also uses Nautilus Scripts, so you can right click selection of files and convert like:
+
 http://mkanyicy.21publish.com/pub/mkanyicy/ftransc_nautilus-scripts.png
+
+----
