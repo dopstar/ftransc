@@ -1,4 +1,4 @@
-#summary ftransc Installation Instructions and Usage Tutorials
+#summary ftransc Installation Instructions and Usage Tutorial
 
 = What is ftransc =
 
