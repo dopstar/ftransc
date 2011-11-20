@@ -1,3 +1,6 @@
+ftransc 4.1.5 (20 Nov 2011):
+	+ extracting .wmv video metadata when extracting audio conntent from .wmv
+	video.
 ftransc 4.1.4 (20 Nov 2011):
 	+ fixed issue of not dropping support to encode to some format when
 	the necessary dependency is not installed.
