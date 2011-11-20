@@ -2,8 +2,10 @@
 
 = What is ftransc =
 
-ftransc is a script written in python for the linux operating system 
+ftransc is a script written in python for the Linux-based operating systems 
 for converting audio files across various formats.
+
+From version 4.1.0, there is a GUI front-end to ftransc which is called ftransc_qt. 
 
 == ftransc Dependencies ==
 
@@ -14,25 +16,46 @@ The dependencies for ftransc are:
   * [http://flac.sourceforge.net flac] - for encoding to flac format.
   * [http://www.vorbis.com vorbis-tools] - for encoding to ogg format.
   * [http://www.audiocoding.com faac] - for encoding to aac format (with .m4a extension).
+  * [http://www.musepack.net mppenc] - for encoding to musepack format (.mpc extension).
+  * [http://www.riverbankcomputing.co.uk/software/pyqt/intro PyQt4] - for the GUI front-end, ftransc_qt.
 
 == Installing ftransc == 
 
-Install dependencies on Terminal using apt-get as follows:
+Install dependencies, including subversion, on Terminal using apt-get as follows.
 {{{
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen
+    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4
 }}}
 
-Obtain the latest released ftransc tarball version from [http://code.google.com/p/ftransc/downloads/list ftransc] website and unpack and install it as follows:
+OPTION A. Obtain the latest released ftransc tarball version from [http://code.google.com/p/ftransc/downloads/list ftransc] website and unpack and install it as follows:
 {{{
     tar xvzf ftransc-x.y.z.tar.gz
     cd ftransc-x.y.z
-    sudo make uninstall \# remove older ftransc version (if any)
+    sudo make uninstall
     sudo make install
+}}}
+OR:
+OPTION B. Obtain the latest ftransc code from trunk using subversion as follows.
+{{{
+    cd /tmp
+    svn export http://ftransc.googlecode.com/svn/trunk ftransc_tmp_dir
+    cd ftransc_tmp_dir
+    sudo make uninstall
+    sudo make install
+}}}
+OR:
+OPTION C. If you already have ftransc of version 4.0.5 or higher and intend to upgrade to the lastest available version in trunk, you can use the --upgrade option of ftransc as follows.
+{{{
+    sudo ftransc --upgrade
 }}}
 
 Now you should be able to run ftransc from terminal. You use ftransc to check if the dependencies it needs are installed or not as follows:
 {{{
     ftransc --check
+}}}
+
+For further ftransc help:
+{{{
+    man ftransc
 }}}
 
 == How ftransc Works == 
@@ -43,12 +66,13 @@ followed by the next one, until all input files are converted.
 
 Conversion steps:
 
- # A lockfile corresponding to the input file is created, if it exists already, then the file is skipped because its already locked.
- # Then, the metadata tags are copied from the input file. Not all tags are copied, only *title*, *artist*, *album*, *genre*, *track number*, and album/song release *date/year* are copied. The character encoding used to handle metadata tags is UTF-8.
- # The input file is converted to the the desired audio format. The input file is not changed in any way. 
- # When the second step, above, has finised successfully, the metadata tags that were copied, if any, are then inserted into the newly created file.
- # A lockfile corresponding to the input file is deleted.
- # If an option to remove the original file is specified and if the conversion process has finished successfully, the original file is deleted.
+ # 1. A lockfile corresponding to the input file is created, if it exists already, then the file is skipped because its already locked.
+ # 2. Then, the metadata tags are copied from the input file. Not all tags are copied, only *title*, *artist*, *album*, *genre*, *track number*, and album/song release *date/year* are copied. The character encoding used to handle metadata tags is UTF-8.
+ # 3. The input file is converted to the the desired audio format. The input file is not changed in any way. 
+ # 4. When the second step, above, has finised successfully, the metadata tags that were copied, if any, are then inserted into the newly created file.
+ # 5. A lockfile corresponding to the input file is deleted.
+ # 6. If an option to remove the original file is specified and if the conversion process has finished successfully, the original file is deleted.
+ # Note: If step any of steps 2 to 4 has caused ftransc to terminate before reaching step 5, a lockfile will still exist. Further attempts to encode a file with a lockfile existing will cause that file to be skipped. To remove the lockfile use the '-u' option.
 
 == ftransc Examples ==
 
@@ -56,6 +80,7 @@ Example 1 - converting from MP3 to OGG:
 {{{
     ftransc -f ogg filename.mp3
 }}}
+The output file name for the above example will be 'filename.ogg'
 
 Example 2 - converting from MP3 to AAC, removing original file on success, using high quality preset:
 {{{
@@ -67,7 +92,12 @@ Example 3 - extract audio content from a video files into the MP3 format, use be
     ftransc -q insane -f mp3 filename1.flv filename2.avi filename3.mpg filename4.vob ...
 }}}
 
-Example 4 - convert all audio files inside a given folder into WMA format
+Example 4 - convert all audio files inside a given folder into WMA format. (This option is not recursive to child-folders)
 {{{
     ftransc -f wma --directory /path/to/folder_name
+}}}
+
+Example 5 - convert all audio audio files (and extract all audio content from video files) inside a given folder recursively including all sub-/child-folders, ftransc should be used with the 'find' command in the pipeline as follows:
+{{{
+    find /path/to/folder_name -type f -print0 | xargs -0 ftransc -f aac -q high
 }}}
