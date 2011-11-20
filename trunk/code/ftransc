@@ -31,7 +31,9 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.6'
+VERSION = '4.1.7'
+LOGFILE = '/dev/null'
+SILENT = False
 
 class MetaTag(object):
     """
@@ -119,14 +121,10 @@ class MetaTag(object):
         """
         tags = File(self.input_file, easy=True)
         ext = splitext(self.input_file)[1].lower()
-        if ext not in ('.wma', '.wmv') and ext in self.exts:
-            for tag in self.tags:
-                if tag in tags:
-                    self.tags[tag] = tags[tag][0]
-        elif ext in ('.wma', '.wmv'):
-            for tag, wma_key in self.__tag_mapping[ext].items():
-                if wma_key in tags:
-                    self.tags[tag] = tags[wma_key][0]
+        if ext in self.exts:
+            for tag, key in self.__tag_mapping[ext].items():
+                if key in tags:
+                    self.tags[tag] = tags[key][0]
     
     def insert(self, output_file):
         """
@@ -170,11 +168,11 @@ def check_deps(check=False):
     for d in deps:
         pkg = Popen(["which", d], stdout=PIPE).communicate()[0].strip() 
         if check:
-            print d + '...' + rd + " not installed" + nc if not pkg \
-                    else d + '...' + gr + " installed" + nc
+            print2(d + '...' + rd + " not installed" + nc if not pkg \
+                    else d + '...' + gr + " installed" + nc)
         else:
             if not pkg:
-                print "%s_______ %s not installed _______%s" % (rd, d, nc)
+                print2("%s_______ %s not installed _______%s" % (rd, d, nc))
                 for fmt in deps[d]:
                     supported_formats.remove(fmt)
     if check:
@@ -288,6 +286,13 @@ def upgrade_version(current_version):
             Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
     raise SystemExit('done')
 
+def print2(msg, noreturn=False):
+    if not SILENT:
+        if noreturn:
+            print msg,
+        else:
+            print msg
+
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {
         "mp3": 
@@ -365,9 +370,9 @@ if __name__ == "__main__":
 
     no_tags = False
     if float(mutagen.version_string) < 1.17:
-        print yl + "Warning:" + nc + \
+        print2(yl + "Warning:" + nc + \
                 " your version of python-mutagen is older than version 1.17." +\
-                "\nAll metadata tags will be lost.\n"
+                "\nAll metadata tags will be lost.\n")
         no_tags = True
     
     parser = OptionParser(usage="%prog [options] [files]", version=VERSION)
@@ -391,6 +396,14 @@ if __name__ == "__main__":
             help='convert all files inside the given directory')
     parser.add_option('--upgrade', action='store_true', default=False,
             help='upgrade to the latest available version')
+    parser.add_option('-s', '--silent', action='store_true', default=False,
+            help='Be silent, nothing is printed out')
+    parser.add_option('-l', '--log', dest='logfile', default=LOGFILE,
+            help='Write log message to the specified file')
+    parser.add_option('--debug', action='store_true', default=False,
+            help='Debug mode. Print everything to the screen.')
+    parser.add_option('--notify', action='store_true', default=False,
+            help='Show encoding summary notification')
     opt, files = parser.parse_args()
     
     if opt.upgrade:
@@ -404,6 +417,13 @@ if __name__ == "__main__":
     if 'convert to ' in argv[0]:
         opt.format = argv[0].split()[-1]
     
+    if opt.debug:
+        LOGFILE = '/dev/stdout'
+    elif opt.logfile:
+        LOGFILE = opt.logfile
+    
+    SILENT = opt.silent
+
     files = list(set(files)) #remove duplicates
     files.sort()
     home = getcwd()
@@ -427,8 +447,8 @@ if __name__ == "__main__":
         fmt = "wav"
     if fmt != 'wav':
         if qual not in quality_presets[fmt]:
-            print "%s%s%s invalid quality preset, using %s%s%s." % \
-                    (rd, qual, nc, gr, 'normal', nc)
+            print2("%s%s%s invalid quality preset, using %s%s%s." % \
+                    (rd, qual, nc, gr, 'normal', nc))
             qual = "normal"
     try: 
         preset = quality_presets[fmt][qual]
@@ -442,7 +462,7 @@ if __name__ == "__main__":
     for c, in_tuple in enumerate([(dirname(x), basename(x)) for x in files]):
         new_dir, ifile = in_tuple
         tic = time()
-        null = open('/dev/null','w')
+        logfile = open(LOGFILE,'a', 0)
         ofile = splitext(ifile)[0] + "." + fmt 
         if new_dir:
             if not isabs(new_dir):
@@ -450,37 +470,37 @@ if __name__ == "__main__":
             new_dir = realpath(new_dir)
             if new_dir != getcwd():
                 chdir(new_dir)
-                print "\n___ Working Directory '%s' ___ " % new_dir
+                print2("\n___ Working Directory '%s' ___ " % new_dir)
         else:
             if getcwd() != home:
                 chdir(home)
-                print "\n___ Working Directory '%s' ___ " % home
+                print2("\n___ Working Directory '%s' ___ " % home)
 
         if ofile == ifile:
-            print "%s%d/%d%s | %s%s%s | input = output | %sskipped%s" % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
+            print2("%s%d/%d%s | %s%s%s | input = output | %sskipped%s" % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
         if not exists(ifile):
-            print "%s%d/%d%s | %s%s%s | %sdoes not exist%s" % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, rd, nc)
+            print2("%s%d/%d%s | %s%s%s | %sdoes not exist%s" % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, rd, nc))
             fails += 1
             continue
         if isfile(ofile) and not opt.overwrite:
-            print "%s%d/%d%s | %s%s%s | use '-w' to overwrite | %sskipped%s" % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
+            print2("%s%d/%d%s | %s%s%s | use '-w' to overwrite | %sskipped%s" % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
         if isdir(ifile) and opt.walk is None:
-            print "%s%d/%d%s | %s%s%s |  use '--directory' | %sskipped%s" % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
+            print2("%s%d/%d%s | %s%s%s |  use '--directory' | %sskipped%s" % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
         #_____________ lockfile creation ________________
         swp_file = ".%s.swp" % ifile
         if isfile(swp_file) and not opt.unlock:
-            print "%s%d/%d%s | %s%s%s | use '-u' to unlock | %sskipped%s" % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc)
+            print2("%s%d/%d%s | %s%s%s | use '-u' to unlock | %sskipped%s" % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
         elif not isfile(swp_file):
@@ -495,24 +515,28 @@ if __name__ == "__main__":
             if not no_tags:
                 metadata = MetaTag(ifile)
         except IOError:
-            print "%s%d/%d%s | %s%s%s | %sUnreadable%s"  % \
-                    (pk, c + 1, total, nc, bl, ifile, nc, rd, nc)
+            print2("%s%d/%d%s | %s%s%s | %sUnreadable%s"  % \
+                    (pk, c + 1, total, nc, bl, ifile, nc, rd, nc))
             dummy = remove(swp_file)
             fails += 1
             continue
         #___________ audio convert ______________
         ifilename, in_ext = splitext(ifile)
-        system('printf "%s%d/%d%s | to %s | %s%s%s ... "' % \
-                (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc))
-        if converters[fmt](ifilename, in_ext, null, preset=preset):
-            print "%sSuccess%s" % (gr, nc),
+        if not SILENT:
+            system('printf "%s%d/%d%s | to %s | %s%s%s ... "' % \
+                    (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc))
+        else:
+            print2('%s%d/%d%s | to %s | %s%s%s ...' % \
+                    (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc))
+        if converters[fmt](ifilename, in_ext, logfile, preset=preset):
+            print2("%sSuccess%s" % (gr, nc), noreturn=True)
             if opt.remove: 
                 dummy = remove(ifile)
             if fmt.lower() == "flac":
                 dummy = remove(ifilename + '.wav')
             dummy = remove(swp_file)
         else:
-            print "%sFail%s" % (rd, nc)
+            print2("%sFail%s" % (rd, nc))
             dummy = remove(swp_file)
             del metadata
             fails += 1
@@ -524,13 +548,15 @@ if __name__ == "__main__":
                 del metadata
         except:
             pass
-        null.close()
+        logfile.close()
         toc = time()
         times.append(toc - tic)
-        print "| %d sec" % (toc - tic)
+        print2("| %d sec" % (toc - tic))
 
     
-    if Popen(["which", 'notify-send'], stdout=PIPE).communicate()[0].strip():
+    notify_send = Popen(["which", 'notify-send'], 
+                        stdout=PIPE).communicate()[0].strip()
+    if opt.notify and notify_send:
         Popen(
               [
                 'notify-send', 
@@ -540,7 +566,7 @@ if __name__ == "__main__":
                 ],
                 stdout=PIPE).communicate()
 
-    if times:
+    if opt.notify and times:
         print '_' * 80
         print 'average: %d sec per song' % int(sum(times)/(1.0*len(times)))
         hr = int(sum(times)  / 3600)

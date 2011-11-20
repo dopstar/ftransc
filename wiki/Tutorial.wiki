@@ -54,6 +54,7 @@ Now you should be able to run ftransc from terminal. You use ftransc to check if
 For further ftransc help:
 {{{
     man ftransc
+    ftransc --help
 }}}
 
 == How ftransc Works == 

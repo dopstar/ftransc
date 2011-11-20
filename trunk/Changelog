@@ -1,4 +1,8 @@
 ftransc 4.1.6 (20 Nov 2011):
+	+ Adding the options: -s/--silent, -l/--log, --debug, --notify
+	+ Fixed metadata issue with the year tag when converting from FLAC format.
+
+ftransc 4.1.6 (20 Nov 2011):
 	+ Adding mpc format support on ftransc nautilus scripts.
 
 ftransc 4.1.5 (20 Nov 2011):
