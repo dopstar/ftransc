@@ -2,9 +2,10 @@
 
 import os
 import sys
+from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.1.3'
+VERSION = '4.1.4'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -28,14 +29,43 @@ class Window(QtGui.QDialog):
 
         codec_label = QtGui.QLabel("Convert To:")
         self.codec_combobox = QtGui.QComboBox()
-        self.codec_combobox.addItem("AAC")
-        self.codec_combobox.addItem("FLAC")
-        self.codec_combobox.addItem("MPC")
-        self.codec_combobox.addItem("MP3")
-        self.codec_combobox.addItem("OGG")
-        self.codec_combobox.addItem("WAV")
-        self.codec_combobox.addItem("WMA")
-        self.codec_combobox.setCurrentIndex(3)
+        ffmpeg  = Popen(['which', 'ffmpeg'], 
+                        stdout=PIPE, 
+                        stderr=PIPE).communicate()[0]
+
+        faac    = Popen(['which', 'faac'], 
+                        stdout=PIPE, 
+                        stderr=PIPE).communicate()[0]
+
+        vorbis  = Popen(['which', 'oggenc'], 
+                        stdout=PIPE, 
+                        stderr=PIPE).communicate()[0]
+
+        lame    = Popen(['which', 'lame'], 
+                        stdout=PIPE, 
+                        stderr=PIPE).communicate()[0]
+
+        musepack = Popen(['which', 'mppenc'], 
+                         stdout=PIPE, 
+                         stderr=PIPE).communicate()[0]
+
+        flac    = Popen(['which', 'flac'], 
+                         stdout=PIPE, 
+                         stderr=PIPE).communicate()[0]
+
+        if ffmpeg and faac:
+            self.codec_combobox.addItem("aac")
+        if ffmpeg and flac:
+            self.codec_combobox.addItem("flac")
+        if ffmpeg and musepack:
+            self.codec_combobox.addItem("mpc")
+        if ffmpeg and lame:
+            self.codec_combobox.addItem("mp3")
+        if ffmpeg and vorbis:
+            self.codec_combobox.addItem("ogg")
+        if ffmpeg:
+            self.codec_combobox.addItem("wav")
+            self.codec_combobox.addItem("wma")
         
         quality_label = QtGui.QLabel("Quality:")
         self.quality_combobox = QtGui.QComboBox()
@@ -67,7 +97,7 @@ class Window(QtGui.QDialog):
         body_layout.addLayout(foot_layout)
 
         self.setLayout(body_layout)
-        self.setWindowTitle("ftransc %s - Audio Converter" % VERSION)
+        self.setWindowTitle("ftransc Audio Converter v%s" % VERSION)
         self.resize(700, 400)
 
 

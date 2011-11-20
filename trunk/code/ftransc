@@ -31,7 +31,7 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.3'
+VERSION = '4.1.4'
 
 class MetaTag(object):
     """
@@ -402,10 +402,9 @@ if __name__ == "__main__":
         upgrade_version(VERSION)
 
     no_tags = opt.no_tags
-        
     
     if environ['USER'] == 'root':
-        raise SystemExit('It is not safe to run ftransc as a root.')
+        raise SystemExit('It is not safe to run ftransc as root.')
     
     if 'convert to ' in argv[0]:
         opt.format = argv[0].split()[-1]
@@ -415,8 +414,7 @@ if __name__ == "__main__":
     home = getcwd()
     fmt = opt.format.lower()
     qual = opt.quality.lower()
-    if opt.check:
-        check_deps(check=True)
+    check_deps(check=opt.check)
     if fmt in ("mp4", "m4a", "aac"): 
         fmt = "m4a"
     if fmt in ("mpc", "musepack"):
