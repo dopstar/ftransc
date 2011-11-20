@@ -1,4 +1,4 @@
-ftransc 4.1.6 (20 Nov 2011):
+ftransc 4.1.7 (20 Nov 2011):
 	+ Adding the options: -s/--silent, -l/--log, --debug, --notify
 	+ Fixed metadata issue with the year tag when converting from FLAC format.
 
