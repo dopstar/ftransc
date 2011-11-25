@@ -31,7 +31,7 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.7'
+VERSION = '4.1.8'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -416,6 +416,8 @@ if __name__ == "__main__":
     
     if 'convert to ' in argv[0]:
         opt.format = argv[0].split()[-1]
+        opt.notify = True
+        opt.logfile = '/tmp/ftransc.log'
     
     if opt.debug:
         LOGFILE = '/dev/stdout'
