@@ -1,3 +1,8 @@
+ftransc 4.2.0 (03 Dec 2011):
+	+ removed quality presets from code and placed them in a separate file
+	/etc/ftransc/presets.
+	+ added new option to specify a custom preset file: --presets
+
 ftransc 4.1.9 (03 Dec 2011):
 	+ reverted back metadata extraction method to earlier revision.
 

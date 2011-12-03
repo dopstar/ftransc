@@ -23,6 +23,13 @@ FEATURES:
 	3. Metadata support UTF-8 character set.
 	4. Files not ovewritten (unless overridden)
 	5. Extracting audio content from video files.
+
+PRESETS:
+-------
+    The audio quality presets are:
+        insane, extreme, high, normal, low, & tiny
+    These presets can be changed in the /etc/ftransc/presets.conf file. 
+    New presets can also be added there or in a separate file.
 	
 REQUIREMENTS:
 -------------

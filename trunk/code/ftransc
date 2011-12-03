@@ -17,6 +17,7 @@ from os.path import (
 from os import remove, chdir, getcwd, walk, system, environ
 from subprocess import Popen, PIPE
 from optparse import OptionParser
+from ConfigParser import ConfigParser
 from time import time
 from urllib import urlopen
 from sys import argv
@@ -31,7 +32,7 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.9'
+VERSION = '4.2.0'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -123,7 +124,13 @@ class MetaTag(object):
         ext = splitext(self.input_file)[1].lower()
         if ext not in ('.wma', '.wmv') and ext in self.exts:
             for tag in self.tags:
-                self.tags[tag] = tags[tag][0]
+                try:
+                    self.tags[tag] = tags[tag][0]
+                except KeyError:
+                    if tag == 'year':
+                        self.tags[tag] = tags['date'][0]
+                    else:
+                        raise
         elif ext in ('.wma', '.wmv') and ext in self.exts:
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
@@ -146,7 +153,7 @@ class MetaTag(object):
             elif ext in self.exts and ext != '.mp3':
                 if tag == 'tracknumber' and ext == '.m4a':
                     try:
-                        trkn = [int(i) for i in value.split('/')]
+                        trkn = [int(i) for i in str(value).split('/')]
                         tags[self.__tag_mapping[ext][tag]] = \
                                 [(trkn[0], trkn[1])]
                     except IndexError:
@@ -274,6 +281,7 @@ def upgrade_version(current_version):
     target  = '%s/version' % trunk_url
     latest  = map(int, urlopen(target).read().strip().split('.'))
     current = map(int, current_version.split('.'))
+    latest_version = '.'.join(map(str, latest))
 
     if latest > current:
         cmd = ['svn', 'export', trunk_url, tmp_dir]
@@ -287,7 +295,9 @@ def upgrade_version(current_version):
             chdir('..')
             cmd = ['rm', '-r', '-f', tmp_dir]
             Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
-    raise SystemExit('done')
+        raise SystemExit('upgraded from version [%s] to version [%s]' % \
+                     (current_version, latest_version))
+    raise SystemExit('You are already on the latest version.')
 
 def print2(msg, noreturn=False):
     if not SILENT:
@@ -298,60 +308,6 @@ def print2(msg, noreturn=False):
 
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {
-        "mp3": 
-        {
-            "insane"    : "--cbr -b 320",
-            "extreme"   : "-V 0",
-            "high"      : "-V 2",
-            "normal"    : "-V 4",
-            "low"       : "--preset 64",
-            "tiny"      : "--cbr -b 32 -m m -s 32",
-            },
-        "ogg": 
-        {
-            "insane"    : "-q 10",
-            "extreme"   : "-q 8",
-            "high"      : "-q 6",
-            "normal"    : "",
-            "low"       : "-q 1",
-            "tiny"      : "-q -1",
-            },
-        "wma":
-        {
-            "insane"    : "-ab 320000 -ac 2 -acodec wmav2",
-            "extreme"   : "-ab 256000 -ac 2 -acodec wmav2",
-            "high"      : "-ab 192000 -ac 2 -acodec wmav2",
-            "normal"    : "-ab 128000 -ac 2 -acodec wmav2",
-            "low"       : "-ab 64000 -ac 2 -acodec wmav2",
-            "tiny"      : "-ab 32000 -ac 2 -acodec wmav2",
-            },
-        "m4a":
-        {
-            "insane"    : "-q 500 -w",
-            "extreme"   : "-q 350 -w",
-            "high"      : "-q 200 -w",
-            "normal"    : "-w",
-            "low"       : "-q 50 -w",
-            "tiny"      : "-q 10 -w",
-            },
-        "flac":
-        {
-            "insane"    : "--best",
-            "extreme"   : "-7",
-            "high"      : "-6",
-            "normal"    : "-5",
-            "low"       : "-3",
-            "tiny"      : "--fast",
-            },
-        "mpc":
-        {
-            "insane"    : "--braindead --overwrite",
-            "extreme"   : "--insane --overwrite",
-            "high"      : "--extreme --overwrite",
-            "normal"    : "--normal --overwrite",
-            "low"       : "--telephone --overwrite",
-            "tiny"      : "--quality 1.00 --overwrite",
-            },
 }
 converters = {
         "mp3"   : convert_to_mp3, 
@@ -407,6 +363,8 @@ if __name__ == "__main__":
             help='Debug mode. Print everything to the screen.')
     parser.add_option('--notify', action='store_true', default=False,
             help='Show encoding summary notification')
+    parser.add_option('--presets', default='/etc/ftransc/presets.conf',
+            help='Use presets from the specified presets configuration file')
     opt, files = parser.parse_args()
     
     if opt.upgrade:
@@ -439,8 +397,23 @@ if __name__ == "__main__":
         fmt = "m4a"
     if fmt in ("mpc", "musepack"):
         fmt = "mpc"
+    if opt.decode: 
+        fmt = "wav"
     if fmt not in supported_formats:
         raise SystemExit("%s%s%s is not a supported format" % (rd, fmt, nc))
+    if not isfile(opt.presets):
+        raise SystemExit('The presets file [%s] does not exist' % opt.presets)
+    elif fmt != 'wav':
+        presets = ConfigParser()
+        presets.readfp(open(opt.presets))
+        if qual not in presets.options(fmt):
+            print2("%s%s%s invalid quality preset, using %s%s%s." % \
+                    (rd, qual, nc, gr, 'normal', nc))
+            qual = 'normal'
+        preset = presets.get(fmt, qual)
+    else:
+        preset = None
+
     if len(files) < 1 and opt.walk is None:
         raise SystemExit("ftransc: no input file")
     if opt.walk is not None:
@@ -448,19 +421,8 @@ if __name__ == "__main__":
         dest_dir, dummy, files = walker.next()
         pwd = getcwd()
         chdir(dest_dir)
-    if opt.decode: 
-        fmt = "wav"
-    if fmt != 'wav':
-        if qual not in quality_presets[fmt]:
-            print2("%s%s%s invalid quality preset, using %s%s%s." % \
-                    (rd, qual, nc, gr, 'normal', nc))
-            qual = "normal"
-    try: 
-        preset = quality_presets[fmt][qual]
-    except KeyError: 
-        preset = None
-    old_dir = ''
 
+    old_dir = ''
     total = len(files)
     fails = 0
     times = []
@@ -551,8 +513,9 @@ if __name__ == "__main__":
             if not no_tags:
                 metadata.insert(ofile)
                 del metadata
-        except:
-            pass
+        except Exception, err:
+            if opt.debug:
+                print2("%s%s%s" % (rd, err.message, nc))
         logfile.close()
         toc = time()
         times.append(toc - tic)

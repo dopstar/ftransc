@@ -13,9 +13,12 @@ install:
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ WAV
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ MPC
 	chown ${SUDO_USER}:${SUDO_USER} ~/.gnome2/nautilus-scripts/ftransc/
+	mkdir -m 755 /etc/ftransc 2> /dev/null || :
+	install -m 644 config/presets.conf /etc/ftransc
 uninstall:
 	rm -f /usr/local/bin/ftransc
 	rm -f /usr/local/bin/ftransc_qt
 	rm -f /usr/share/man/man1/ftransc.1.gz
 	rm -r -f /usr/share/doc/ftransc
 	rm -r -f ~/.gnome2/nautilus-scripts/ftransc
+	rm -r -f /etc/ftransc
