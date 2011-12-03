@@ -1,3 +1,6 @@
+ftransc 4.1.9 (03 Dec 2011):
+	+ reverted back metadata extraction method to earlier revision.
+
 ftransc 4.1.8 (24 Nov 2011):
 	+ Adding logging for executing as nautilus script
 

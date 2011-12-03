@@ -31,7 +31,7 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.1.8'
+VERSION = '4.1.9'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -121,7 +121,10 @@ class MetaTag(object):
         """
         tags = File(self.input_file, easy=True)
         ext = splitext(self.input_file)[1].lower()
-        if ext in self.exts:
+        if ext not in ('.wma', '.wmv') and ext in self.exts:
+            for tag in self.tags:
+                self.tags[tag] = tags[tag][0]
+        elif ext in ('.wma', '.wmv') and ext in self.exts:
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
                     self.tags[tag] = tags[key][0]
