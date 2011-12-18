@@ -1,3 +1,7 @@
+ftransc 4.2.1 (18 Dec 2011):
+	+ removed the easy=True dependency on mutagen's File
+	+ fixed missing 'normal' ogg vorbis preset on configuration file
+
 ftransc 4.2.0 (03 Dec 2011):
 	+ removed quality presets from code and placed them in a separate file
 	/etc/ftransc/presets.

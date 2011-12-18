@@ -24,7 +24,7 @@ from sys import argv
 
 import mutagen
 from mutagen import File
-from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC
+from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC, TCOM
 from mutagen.mp3 import Open as open_mp3
 from mutagen.mp4 import Open as open_mp4
 from mutagen.asf import Open as open_asf
@@ -32,7 +32,9 @@ from mutagen.flac import Open as open_flac
 from mutagen.oggvorbis import Open as open_ogg
 from mutagen.musepack import Open as open_mpc
 
-VERSION = '4.2.0'
+from ftransc.utils import tagmap
+
+VERSION = '4.2.1'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -40,50 +42,7 @@ class MetaTag(object):
     """
     handles tag extraction and insertion into and/or from audio files
     """
-    __tag_mapping = {
-        '.wma': {
-            'artist'        : 'Author', 
-            'album'         : 'WM/AlbumTitle', 
-            'title'         : 'Title', 
-            'genre'         : 'WM/Genre', 
-            'year'          : 'WM/Year', 
-            'tracknumber'   : 'WM/TrackNumber',
-        },
-        '.mp3'  : {
-            'artist'        : 'TPE1', 
-            'album'         : 'TALB', 
-            'title'         : 'TIT2', 
-            'genre'         : 'TCON', 
-            'year'          : 'TDRC', 
-            'tracknumber'   : 'TRCK',
-        },
-        '.m4a'  : {
-            'artist'        : '\xa9ART', 
-            'album'         : '\xa9alb', 
-            'title'         : '\xa9nam', 
-            'genre'         : '\xa9gen', 
-            'year'          : '\xa9day', 
-            'tracknumber'   : 'trkn',
-        },
-        '.ogg'  : {
-            'artist'        : 'artist', 
-            'album'         : 'album', 
-            'title'         : 'title', 
-            'genre'         : 'genre', 
-            'year'          : 'date', 
-            'tracknumber'   : 'tracknumber',
-        },
-        '.mpc'  : {
-            'artist'        : 'Artist', 
-            'album'         : 'Album', 
-            'title'         : 'Title', 
-            'genre'         : 'Genre', 
-            'year'          : 'Year', 
-            'tracknumber'   : 'Track',
-        },
-    }
-    __tag_mapping['.flac'] = __tag_mapping['.ogg']
-    __tag_mapping['.wmv']  = __tag_mapping['.wma']
+    __tag_mapping = tagmap.tags.copy()
 
     __id3_mapping = {
             'artist'        : TPE1, 
@@ -91,7 +50,8 @@ class MetaTag(object):
             'title'         : TIT2, 
             'genre'         : TCON, 
             'year'          : TDRC, 
-            'tracknumber'   : TRCK
+            'tracknumber'   : TRCK,
+            'composer'      : TCOM,
     }
     __opener = {
             '.mp3'          : open_mp3, 
@@ -100,7 +60,18 @@ class MetaTag(object):
             '.m4a'          : open_mp4, 
             '.flac'         : open_flac,
             '.mpc'          : open_mpc,
-   }
+    }
+    exts = (    
+                '.ogg', 
+                '.mp3', 
+                '.flac', 
+                '.mp4', 
+                '.aac', 
+                '.m4a',
+                '.mpc', 
+                '.wma', 
+                '.wmv',
+           )
 
     def __init__(self, input_file):
         self.input_file = input_file
@@ -110,19 +81,19 @@ class MetaTag(object):
                 'album'         : None, 
                 'year'          : None, 
                 'genre'         : None, 
-                'tracknumber'   : None
+                'tracknumber'   : None,
+                'composer'      : None,
         }
-        self.exts = ['.ogg', '.mp3', '.flac', '.mp4', '.aac', '.m4a',
-                               '.mpc', '.wma', '.wmv']
         self.extract()
     
     def extract(self):
         """
         extracts metadata tags from the audio file
         """
-        tags = File(self.input_file, easy=True)
+        tags = File(self.input_file)
         ext = splitext(self.input_file)[1].lower()
-        if ext not in ('.wma', '.wmv') and ext in self.exts:
+        #if ext not in ('.wma', '.wmv') and ext in self.exts:
+        if ext not in ('.wma', '.wmv') and ext not in self.exts:
             for tag in self.tags:
                 try:
                     self.tags[tag] = tags[tag][0]
@@ -131,7 +102,8 @@ class MetaTag(object):
                         self.tags[tag] = tags['date'][0]
                     else:
                         raise
-        elif ext in ('.wma', '.wmv') and ext in self.exts:
+        #elif ext in ('.wma', '.wmv') and ext in self.exts:
+        elif ext in self.exts:
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
                     self.tags[tag] = tags[key][0]
@@ -145,8 +117,12 @@ class MetaTag(object):
             return 1
         tags = self.__opener[ext](output_file)
         for tag, value in self.tags.items():
-            if value is None:
+            if value is None or tag not in self.__tag_mapping[ext]:
                 continue
+            if tag == 'tracknumber' and \
+                (isinstance(value, list) or isinstance(value, tuple)) and\
+                len(value) == 2:
+                value = '%d/%d' % (value[0], value[1])
             if ext == '.mp3':
                 tags[self.__tag_mapping[ext][tag]] = \
                 self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])

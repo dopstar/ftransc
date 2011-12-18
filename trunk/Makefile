@@ -1,3 +1,5 @@
+MAJOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f1`
+MINOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f2`
 install:
 	install -m 755 code/ftransc /usr/local/bin
 	install -m 755 code/ftransc_qt /usr/local/bin
@@ -15,6 +17,11 @@ install:
 	chown ${SUDO_USER}:${SUDO_USER} ~/.gnome2/nautilus-scripts/ftransc/
 	mkdir -m 755 /etc/ftransc 2> /dev/null || :
 	install -m 644 config/presets.conf /etc/ftransc
+	mkdir -p -m 755 /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils 2> /dev/null || :
+	install -m 644 utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
+
 uninstall:
 	rm -f /usr/local/bin/ftransc
 	rm -f /usr/local/bin/ftransc_qt
@@ -22,3 +29,4 @@ uninstall:
 	rm -r -f /usr/share/doc/ftransc
 	rm -r -f ~/.gnome2/nautilus-scripts/ftransc
 	rm -r -f /etc/ftransc
+	rm -r -f /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc
