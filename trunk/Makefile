@@ -20,6 +20,7 @@ install:
 	mkdir -p -m 755 /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils 2> /dev/null || :
 	install -m 644 utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	install -m 644 utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 utils/convert.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
 
 uninstall:
