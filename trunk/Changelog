@@ -1,3 +1,9 @@
+ftransc 4.2.4 (19 Dec 2011):
+	+ dropping checking mutagen version against version 1.17 since easy=True
+	option of File() has been dropped.
+	+ fixed fatal errors when mutagen is not installed. instead, metadata
+	support is dropped.
+
 ftransc 4.2.3 (19 Dec 2011):
 	+ code cleanup
 

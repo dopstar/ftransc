@@ -14,23 +14,29 @@ from os.path import (
         realpath,
         splitext,
 )
-from os import remove, chdir, getcwd, walk, system, environ
-from subprocess import Popen, PIPE
-from optparse import OptionParser
-from ConfigParser import ConfigParser
+
+from sys import argv
 from time import time
 from urllib import urlopen
-from sys import argv
+from optparse import OptionParser
+from subprocess import Popen, PIPE
+from ConfigParser import ConfigParser
+from os import remove, chdir, getcwd, walk, system, environ
 
-import mutagen
-from mutagen import File
-from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC, TCOM
-from mutagen.mp3 import Open as open_mp3
-from mutagen.mp4 import Open as open_mp4
-from mutagen.asf import Open as open_asf
-from mutagen.flac import Open as open_flac
-from mutagen.oggvorbis import Open as open_ogg
-from mutagen.musepack import Open as open_mpc
+try:
+    import mutagen
+    from mutagen import File
+    from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC, TCOM
+    from mutagen.mp3 import Open as open_mp3
+    from mutagen.mp4 import Open as open_mp4
+    from mutagen.asf import Open as open_asf
+    from mutagen.flac import Open as open_flac
+    from mutagen.oggvorbis import Open as open_ogg
+    from mutagen.musepack import Open as open_mpc
+    NO_TAGS = False
+except ImportError:
+    print 'python-mutagen not installed, dropping metadata support'
+    NO_TAGS = True
 
 from ftransc.utils import tagmap
 from ftransc.utils.convert import (
@@ -44,7 +50,7 @@ from ftransc.utils.convert import (
                                     convert_to_flac,
                                   )
 
-VERSION = '4.2.3'
+VERSION = '4.2.4'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -53,8 +59,9 @@ class MetaTag(object):
     handles tag extraction and insertion into and/or from audio files
     """
     __tag_mapping = tagmap.tags.copy()
-
-    __id3_mapping = {
+    
+    if not NO_TAGS:
+        __id3_mapping = {
             'artist'        : TPE1, 
             'album'         : TALB, 
             'title'         : TIT2, 
@@ -62,15 +69,19 @@ class MetaTag(object):
             'year'          : TDRC, 
             'tracknumber'   : TRCK,
             'composer'      : TCOM,
-    }
-    __opener = {
+        }
+        __opener = {
             '.mp3'          : open_mp3, 
             '.wma'          : open_asf, 
             '.ogg'          : open_ogg, 
             '.m4a'          : open_mp4, 
             '.flac'         : open_flac,
             '.mpc'          : open_mpc,
-    }
+        }
+    else:
+        __id3_mapping = {}
+        __opener      = {}
+
     exts = (    
                 '.ogg', 
                 '.mp3', 
@@ -229,13 +240,6 @@ if __name__ == "__main__":
     pk = "\033[1;35m"
     nc = "\033[0m"
 
-    no_tags = False
-    if float(mutagen.version_string) < 1.17:
-        print2(yl + "Warning:" + nc + \
-                " your version of python-mutagen is older than version 1.17." +\
-                "\nAll metadata tags will be lost.\n")
-        no_tags = True
-    
     parser = OptionParser(usage="%prog [options] [files]", version=VERSION)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
@@ -272,7 +276,10 @@ if __name__ == "__main__":
     if opt.upgrade:
         upgrade_version(VERSION)
 
-    no_tags = opt.no_tags
+    if NO_TAGS:
+        no_tags = NO_TAGS
+    else:
+        no_tags = opt.no_tags
     
     if environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as root.')
