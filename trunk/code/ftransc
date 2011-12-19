@@ -24,7 +24,6 @@ from ConfigParser import ConfigParser
 from os import remove, chdir, getcwd, walk, system, environ
 
 try:
-    import mutagen
     from mutagen import File
     from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC, TCOM
     from mutagen.mp3 import Open as open_mp3
@@ -35,12 +34,10 @@ try:
     from mutagen.musepack import Open as open_mpc
     NO_TAGS = False
 except ImportError:
-    print 'python-mutagen not installed, dropping metadata support'
     NO_TAGS = True
 
 from ftransc.utils import tagmap
 from ftransc.utils.convert import (
-                                    convert,
                                     convert_to_wav,
                                     convert_to_wma,
                                     convert_to_mpc,
@@ -50,7 +47,7 @@ from ftransc.utils.convert import (
                                     convert_to_flac,
                                   )
 
-VERSION = '4.2.4'
+VERSION = '4.2.5'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -169,15 +166,15 @@ def check_deps(check=False):
             'oggenc'            : ['ogg'],
             'mppenc'            : ['mpc'],
             }
-    for d in deps:
-        pkg = Popen(["which", d], stdout=PIPE).communicate()[0].strip() 
+    for dep in deps:
+        pkg = Popen(["which", dep], stdout=PIPE).communicate()[0].strip() 
         if check:
-            print2(d + '...' + rd + " not installed" + nc if not pkg \
-                    else d + '...' + gr + " installed" + nc)
+            print2(dep + '...' + rd + " not installed" + nc if not pkg \
+                    else dep + '...' + gr + " installed" + nc)
         else:
             if not pkg:
-                print2("%s_______ %s not installed _______%s" % (rd, d, nc))
-                for fmt in deps[d]:
+                print2("%s_______ %s not installed _______%s" % (rd, dep, nc))
+                for fmt in deps[dep]:
                     supported_formats.remove(fmt)
     if check:
         raise SystemExit(0)
@@ -188,18 +185,21 @@ def upgrade_version(current_version):
     """
     
     trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
-    tmp_dir = 'tmp-ftransc_upgrade-tmp'
+    tmp_dir = '/tmp/tmp-ftransc_upgrade-tmp'
     if environ['USER'] != 'root':
         raise SystemExit('try using "sudo", you have to be "root" on this one.')
     target  = '%s/version' % trunk_url
-    latest  = map(int, urlopen(target).read().strip().split('.'))
+    try:
+        latest  = map(int, urlopen(target).read().strip().split('.'))
+    except IOError:
+        raise SystemExit('ftransc upgrade failed: \033[1;31moffline\033[0m')
     current = map(int, current_version.split('.'))
     latest_version = '.'.join(map(str, latest))
 
     if latest > current:
         cmd = ['svn', 'export', trunk_url, tmp_dir]
         with open('/dev/null', 'w') as devnull:
-            p1 = Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
             chdir(tmp_dir)
             cmd = ['make', 'uninstall']
             Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
@@ -233,6 +233,7 @@ converters = {
         }
 
 if __name__ == "__main__":
+    #______________________ colors __________________________
     rd = "\033[1;31m"
     gr = "\033[1;32m"
     yl = "\033[1;33m"
@@ -240,6 +241,7 @@ if __name__ == "__main__":
     pk = "\033[1;35m"
     nc = "\033[0m"
 
+    #______________________ options _________________________
     parser = OptionParser(usage="%prog [options] [files]", version=VERSION)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
@@ -284,6 +286,7 @@ if __name__ == "__main__":
     if environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as root.')
     
+    #_________________ nautilus scripts ___________________
     if 'convert to ' in argv[0]:
         opt.format = argv[0].split()[-1]
         opt.notify = True
@@ -338,7 +341,7 @@ if __name__ == "__main__":
     for c, in_tuple in enumerate([(dirname(x), basename(x)) for x in files]):
         new_dir, ifile = in_tuple
         tic = time()
-        logfile = open(LOGFILE,'a', 0)
+        logfile = open(LOGFILE, 'a', 0)
         ofile = splitext(ifile)[0] + "." + fmt 
         if new_dir:
             if not isabs(new_dir):

@@ -5,7 +5,7 @@ import sys
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.2.4'
+VERSION = '4.2.5'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -69,13 +69,11 @@ class Window(QtGui.QDialog):
         
         quality_label = QtGui.QLabel("Quality:")
         self.quality_combobox = QtGui.QComboBox()
-        self.quality_combobox.addItem("Insane")
-        self.quality_combobox.addItem("Extreme")
-        self.quality_combobox.addItem("High")
-        self.quality_combobox.addItem("Normal")
-        self.quality_combobox.addItem("Low")
-        self.quality_combobox.addItem("Tiny")
-        self.quality_combobox.setCurrentIndex(3)
+        presets = ['Insane', 'Extreme', 'High', 'Normal', 'Low', 'Tiny']
+        for idx, preset in enumerate(presets):
+            self.quality_combobox.addItem(preset)
+            if preset == 'Normal':
+                self.quality_combobox.setCurrentIndex(idx)
 
         codec_layout.addWidget(codec_label)
         codec_layout.addWidget(self.codec_combobox)
