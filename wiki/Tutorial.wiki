@@ -100,3 +100,8 @@ Example 5 - convert all audio audio files (and extract all audio content from vi
 {{{
     find /path/to/folder_name -type f -print0 | xargs -0 ftransc -f aac -q high
 }}}
+
+== ftransc Quality Presets == 
+
+ftransc uses quality presets called 'insane', 'extreme', 'high', 'normal', 'low', and 'tiny'. These presets are specified by the '-q' or '--quality' option of ftransc and are defined in the '/etc/ftransc/presets.conf' configuration file. 
+The '/etc/ftransc/presets.conf' presets file can be overriden by use of the --presets command and specify the custom presets file to use or, if you know what you are doing, make changes directly on the it.

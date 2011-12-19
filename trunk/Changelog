@@ -1,3 +1,6 @@
+ftransc 4.2.2 (19 Dec 2011):
+	+ code cleanup
+
 ftransc 4.2.1 (18 Dec 2011):
 	+ removed the easy=True dependency on mutagen's File
 	+ fixed missing 'normal' ogg vorbis preset on configuration file

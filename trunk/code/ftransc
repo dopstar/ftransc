@@ -34,7 +34,7 @@ from mutagen.musepack import Open as open_mpc
 
 from ftransc.utils import tagmap
 
-VERSION = '4.2.1'
+VERSION = '4.2.2'
 LOGFILE = '/dev/null'
 SILENT = False
 
@@ -92,18 +92,7 @@ class MetaTag(object):
         """
         tags = File(self.input_file)
         ext = splitext(self.input_file)[1].lower()
-        #if ext not in ('.wma', '.wmv') and ext in self.exts:
-        if ext not in ('.wma', '.wmv') and ext not in self.exts:
-            for tag in self.tags:
-                try:
-                    self.tags[tag] = tags[tag][0]
-                except KeyError:
-                    if tag == 'year':
-                        self.tags[tag] = tags['date'][0]
-                    else:
-                        raise
-        #elif ext in ('.wma', '.wmv') and ext in self.exts:
-        elif ext in self.exts:
+        if ext in self.exts:
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
                     self.tags[tag] = tags[key][0]
