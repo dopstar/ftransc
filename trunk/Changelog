@@ -1,3 +1,7 @@
+ftransc 4.2.6 (05 Jan 2012):
+	+ code cleanup
+	+ added album art support when converting from mp3 to m4a and vice versa
+
 ftransc 4.2.5 (19 Dec 2011):
 	+ code cleanup
 	+ proper message when --upgrade option is used while offline

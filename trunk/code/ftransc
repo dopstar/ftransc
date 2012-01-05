@@ -3,35 +3,23 @@
 ftransc is a script that bundles up utilities for audio conversion.
 """
 
-from os.path import (
-        sep,
-        isabs,
-        isdir, 
-        exists, 
-        isfile, 
-        dirname, 
-        basename, 
-        realpath,
-        splitext,
-)
-
-from sys import argv
-from time import time
-from urllib import urlopen
-from optparse import OptionParser
-from subprocess import Popen, PIPE
-from ConfigParser import ConfigParser
-from os import remove, chdir, getcwd, walk, system, environ
+import os
+import sys
+import time
+import urllib
+import optparse
+import subprocess
+import ConfigParser
 
 try:
-    from mutagen import File
-    from mutagen.id3 import TPE1, TALB, TIT2, TRCK, TCON, TDRC, TCOM
-    from mutagen.mp3 import Open as open_mp3
-    from mutagen.mp4 import Open as open_mp4
-    from mutagen.asf import Open as open_asf
-    from mutagen.flac import Open as open_flac
-    from mutagen.oggvorbis import Open as open_ogg
-    from mutagen.musepack import Open as open_mpc
+    import mutagen
+    import mutagen.id3
+    import mutagen.mp3
+    import mutagen.mp4
+    import mutagen.asf
+    import mutagen.flac
+    import mutagen.musepack
+    import mutagen.oggvorbis
     NO_TAGS = False
 except ImportError:
     NO_TAGS = True
@@ -47,9 +35,10 @@ from ftransc.utils.convert import (
                                     convert_to_flac,
                                   )
 
-VERSION = '4.2.5'
+#_______ global vars _________
+VERSION = '4.2.6'
 LOGFILE = '/dev/null'
-SILENT = False
+SILENT  = False
 
 class MetaTag(object):
     """
@@ -59,21 +48,21 @@ class MetaTag(object):
     
     if not NO_TAGS:
         __id3_mapping = {
-            'artist'        : TPE1, 
-            'album'         : TALB, 
-            'title'         : TIT2, 
-            'genre'         : TCON, 
-            'year'          : TDRC, 
-            'tracknumber'   : TRCK,
-            'composer'      : TCOM,
+            'artist'        : mutagen.id3.TPE1, 
+            'album'         : mutagen.id3.TALB, 
+            'title'         : mutagen.id3.TIT2, 
+            'genre'         : mutagen.id3.TCON, 
+            'year'          : mutagen.id3.TDRC, 
+            'tracknumber'   : mutagen.id3.TRCK,
+            'composer'      : mutagen.id3.TCOM,
         }
         __opener = {
-            '.mp3'          : open_mp3, 
-            '.wma'          : open_asf, 
-            '.ogg'          : open_ogg, 
-            '.m4a'          : open_mp4, 
-            '.flac'         : open_flac,
-            '.mpc'          : open_mpc,
+            '.mp3'          : mutagen.mp3.Open,
+            '.wma'          : mutagen.asf.Open, 
+            '.m4a'          : mutagen.mp4.Open, 
+            '.flac'         : mutagen.flac.Open,
+            '.mpc'          : mutagen.musepack.Open,
+            '.ogg'          : mutagen.oggvorbis.Open, 
         }
     else:
         __id3_mapping = {}
@@ -108,8 +97,8 @@ class MetaTag(object):
         """
         extracts metadata tags from the audio file
         """
-        tags = File(self.input_file)
-        ext = splitext(self.input_file)[1].lower()
+        tags = mutagen.File(self.input_file)
+        ext = os.path.splitext(self.input_file)[1].lower()
         if ext in self.exts:
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
@@ -119,7 +108,7 @@ class MetaTag(object):
         """
         inserts tags tags into an audio file.
         """        
-        ext = splitext(output_file)[1].lower()
+        ext = os.path.splitext(output_file)[1].lower()
         if ext not in self.__opener:
             return 1
         tags = self.__opener[ext](output_file)
@@ -144,7 +133,92 @@ class MetaTag(object):
                 else:
                     tags[self.__tag_mapping[ext][tag]] = [u'%s' % value]
         tags.save()
-  
+
+
+class CoverTag(object):
+    """
+    Handles insertion or extraction of album cover art
+    """
+
+    __tag_mapping = {
+                        '.mp3'  : 'APIC:',
+                        '.m4a'  : 'covr',
+                        '.wma'  : None,
+                        '.ogg'  : None,
+                        '.flac' : None,
+                        '.mpc'  : None,
+                    }
+
+    def __init__(self, filename):
+        self.coverart = {   
+                            'mime'  : 'image/jpeg', 
+                            'type'  : 3, 
+                            'ext'   : None, 
+                            'data'  : None,
+                        }
+        self.extract(filename)
+
+    def extract(self, input_file):
+        ext = os.path.splitext(input_file)[1]
+        if ext not in self.__tag_mapping:
+            return
+        tag = self.__tag_mapping[ext]
+        if tag is None:
+            return
+        
+        tags = mutagen.File(input_file)
+        if tag in tags:
+            self.coverart['ext'] = ext
+            if ext == '.mp3':
+                apic = tags[tag]
+                self.coverart['mime'] = apic.mime
+                self.coverart['data'] = apic.data
+            elif ext == '.m4a':
+                self.coverart['data'] = tags[tag][0]
+        elif ext == '.mp3':
+            for key in tags:
+                if key.startswith(tag):
+                    apic = tags[key]
+                    self.coverart['mime'] = apic.mime
+                    self.coverart['data'] = apic.data
+
+    def insert(self, output_file):
+        ext = os.path.splitext(output_file)[1]
+        if ext not in self.__tag_mapping:
+            return
+        tag = self.__tag_mapping[ext]
+        if tag is None:
+            return
+        if self.coverart['data'] is None:
+            return
+
+        if ext == '.m4a':
+            tags = mutagen.mp4.MP4(output_file)
+            if self.coverart['ext'] == '.mp3':
+                if self.coverart['mime'] == 'image/png':
+                    mime = mutagen.mp4.MP4Cover.FORMAT_PNG
+                else:
+                    mime = mutagen.mp4.MP4Cover.FORMAT_JPEG
+                
+                coverart = mutagen.mp4.MP4Cover(self.coverart['data'], mime)
+                tags['covr'] = [coverart]
+                tags.save()
+                return
+
+        elif ext == '.mp3':
+            audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
+            if self.coverart['ext'] == '.m4a':
+                apic = mutagen.id3.APIC(
+                                            desc     = u'',
+                                            encoding = 3,
+                                            data     = self.coverart['data'],
+                                            type     = self.coverart['type'],
+                                            mime     = self.coverart['mime']
+                                       )
+                audio.tags.add(apic)
+                audio.save()
+                return
+
 def check_deps(check=False):
     """
     checks whether all dependencies for this script are installed or not.
@@ -167,7 +241,8 @@ def check_deps(check=False):
             'mppenc'            : ['mpc'],
             }
     for dep in deps:
-        pkg = Popen(["which", dep], stdout=PIPE).communicate()[0].strip() 
+        pkg = subprocess.Popen(["which", dep], 
+                               stdout=subprocess.PIPE).communicate()[0].strip() 
         if check:
             print2(dep + '...' + rd + " not installed" + nc if not pkg \
                     else dep + '...' + gr + " installed" + nc)
@@ -186,11 +261,11 @@ def upgrade_version(current_version):
     
     trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
     tmp_dir = '/tmp/tmp-ftransc_upgrade-tmp'
-    if environ['USER'] != 'root':
+    if os.environ['USER'] != 'root':
         raise SystemExit('try using "sudo", you have to be "root" on this one.')
     target  = '%s/version' % trunk_url
     try:
-        latest  = map(int, urlopen(target).read().strip().split('.'))
+        latest  = map(int, urllib.urlopen(target).read().strip().split('.'))
     except IOError:
         raise SystemExit('ftransc upgrade failed: \033[1;31moffline\033[0m')
     current = map(int, current_version.split('.'))
@@ -199,15 +274,23 @@ def upgrade_version(current_version):
     if latest > current:
         cmd = ['svn', 'export', trunk_url, tmp_dir]
         with open('/dev/null', 'w') as devnull:
-            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
-            chdir(tmp_dir)
+            subprocess.Popen(cmd, 
+                             stdout=subprocess.PIPE, 
+                             stderr=devnull).communicate()
+            os.chdir(tmp_dir)
             cmd = ['make', 'uninstall']
-            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            subprocess.Popen(cmd, 
+                             stdout=subprocess.PIPE, 
+                             stderr=devnull).communicate()
             cmd = ['make', 'install']
-            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
-            chdir('..')
+            subprocess.Popen(cmd, 
+                             stdout=subprocess.PIPE, 
+                             stderr=devnull).communicate()
+            os.chdir('..')
             cmd = ['rm', '-r', '-f', tmp_dir]
-            Popen(cmd, stdout=PIPE, stderr=devnull).communicate()
+            subprocess.Popen(cmd, 
+                             stdout=subprocess.PIPE, 
+                             stderr=devnull).communicate()
         raise SystemExit('upgraded from version [%s] to version [%s]' % \
                      (current_version, latest_version))
     raise SystemExit('You are already on the latest version.')
@@ -242,7 +325,8 @@ if __name__ == "__main__":
     nc = "\033[0m"
 
     #______________________ options _________________________
-    parser = OptionParser(usage="%prog [options] [files]", version=VERSION)
+    parser = optparse.OptionParser(usage="%prog [options] [files]", 
+                                   version=VERSION)
     parser.add_option('-f', '--format', type=str, default='mp3', 
             help='audio format to convert to')
     parser.add_option('-q', '--quality', type=str, default='normal', 
@@ -283,12 +367,12 @@ if __name__ == "__main__":
     else:
         no_tags = opt.no_tags
     
-    if environ['USER'] == 'root':
+    if os.environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as root.')
     
     #_________________ nautilus scripts ___________________
-    if 'convert to ' in argv[0]:
-        opt.format = argv[0].split()[-1]
+    if 'convert to ' in sys.argv[0]:
+        opt.format = sys.argv[0].split()[-1]
         opt.notify = True
         opt.logfile = '/tmp/ftransc.log'
     
@@ -301,7 +385,7 @@ if __name__ == "__main__":
 
     files = list(set(files)) #remove duplicates
     files.sort()
-    home = getcwd()
+    home = os.getcwd()
     fmt = opt.format.lower()
     qual = opt.quality.lower()
     check_deps(check=opt.check)
@@ -313,10 +397,10 @@ if __name__ == "__main__":
         fmt = "wav"
     if fmt not in supported_formats:
         raise SystemExit("%s%s%s is not a supported format" % (rd, fmt, nc))
-    if not isfile(opt.presets):
+    if not os.path.isfile(opt.presets):
         raise SystemExit('The presets file [%s] does not exist' % opt.presets)
     elif fmt != 'wav':
-        presets = ConfigParser()
+        presets = ConfigParser.ConfigParser()
         presets.readfp(open(opt.presets))
         if qual not in presets.options(fmt):
             print2("%s%s%s invalid quality preset, using %s%s%s." % \
@@ -329,30 +413,31 @@ if __name__ == "__main__":
     if len(files) < 1 and opt.walk is None:
         raise SystemExit("ftransc: no input file")
     if opt.walk is not None:
-        walker = walk(opt.walk)
+        walker = os.walk(opt.walk)
         dest_dir, dummy, files = walker.next()
-        pwd = getcwd()
-        chdir(dest_dir)
+        pwd = os.getcwd()
+        os.chdir(dest_dir)
 
     old_dir = ''
     total = len(files)
     fails = 0
     times = []
-    for c, in_tuple in enumerate([(dirname(x), basename(x)) for x in files]):
+    for c, in_tuple in enumerate(
+                   [(os.path.dirname(x), os.path.basename(x)) for x in files]):
         new_dir, ifile = in_tuple
-        tic = time()
+        tic = time.time()
         logfile = open(LOGFILE, 'a', 0)
-        ofile = splitext(ifile)[0] + "." + fmt 
+        ofile = os.path.splitext(ifile)[0] + "." + fmt 
         if new_dir:
-            if not isabs(new_dir):
-                new_dir = home + sep + new_dir
-            new_dir = realpath(new_dir)
-            if new_dir != getcwd():
-                chdir(new_dir)
+            if not os.path.isabs(new_dir):
+                new_dir = home + os.path.sep + new_dir
+            new_dir = os.path.realpath(new_dir)
+            if new_dir != os.getcwd():
+                os.chdir(new_dir)
                 print2("\n___ Working Directory '%s' ___ " % new_dir)
         else:
-            if getcwd() != home:
-                chdir(home)
+            if os.getcwd() != home:
+                os.chdir(home)
                 print2("\n___ Working Directory '%s' ___ " % home)
 
         if ofile == ifile:
@@ -360,29 +445,29 @@ if __name__ == "__main__":
                     (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
-        if not exists(ifile):
+        if not os.path.exists(ifile):
             print2("%s%d/%d%s | %s%s%s | %sdoes not exist%s" % \
                     (pk, c + 1, total, nc, bl, ifile, nc, rd, nc))
             fails += 1
             continue
-        if isfile(ofile) and not opt.overwrite:
+        if os.path.isfile(ofile) and not opt.overwrite:
             print2("%s%d/%d%s | %s%s%s | use '-w' to overwrite | %sskipped%s" % \
                     (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
-        if isdir(ifile) and opt.walk is None:
+        if os.path.isdir(ifile) and opt.walk is None:
             print2("%s%d/%d%s | %s%s%s |  use '--directory' | %sskipped%s" % \
                     (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
         #_____________ lockfile creation ________________
         swp_file = ".%s.swp" % ifile
-        if isfile(swp_file) and not opt.unlock:
+        if os.path.isfile(swp_file) and not opt.unlock:
             print2("%s%d/%d%s | %s%s%s | use '-u' to unlock | %sskipped%s" % \
                     (pk, c + 1, total, nc, bl, ifile, nc, yl, nc))
             fails += 1
             continue
-        elif not isfile(swp_file):
+        elif not os.path.isfile(swp_file):
             try:
                 with open(swp_file, 'w'): 
                     pass
@@ -393,16 +478,17 @@ if __name__ == "__main__":
         try:
             if not no_tags:
                 metadata = MetaTag(ifile)
+                albumart = CoverTag(ifile)
         except IOError:
             print2("%s%d/%d%s | %s%s%s | %sUnreadable%s"  % \
                     (pk, c + 1, total, nc, bl, ifile, nc, rd, nc))
-            dummy = remove(swp_file)
+            dummy = os.remove(swp_file)
             fails += 1
             continue
         #___________ audio convert ______________
-        ifilename, in_ext = splitext(ifile)
+        ifilename, in_ext = os.path.splitext(ifile)
         if not SILENT:
-            system('printf "%s%d/%d%s | to %s | %s%s%s ... "' % \
+            os.system('printf "%s%d/%d%s | to %s | %s%s%s ... "' % \
                     (pk, c + 1, total, nc, fmt.upper(), bl, ifile, nc))
         else:
             print2('%s%d/%d%s | to %s | %s%s%s ...' % \
@@ -410,13 +496,13 @@ if __name__ == "__main__":
         if converters[fmt](ifilename, in_ext, logfile, preset=preset):
             print2("%sSuccess%s" % (gr, nc), noreturn=True)
             if opt.remove: 
-                dummy = remove(ifile)
+                dummy = os.remove(ifile)
             if fmt.lower() == "flac":
-                dummy = remove(ifilename + '.wav')
-            dummy = remove(swp_file)
+                dummy = os.remove(ifilename + '.wav')
+            dummy = os.remove(swp_file)
         else:
             print2("%sFail%s" % (rd, nc))
-            dummy = remove(swp_file)
+            dummy = os.remove(swp_file)
             del metadata
             fails += 1
             continue
@@ -424,27 +510,29 @@ if __name__ == "__main__":
         try:
             if not no_tags:
                 metadata.insert(ofile)
+                albumart.insert(ofile)
                 del metadata
+                del albumart
         except Exception, err:
             if opt.debug:
                 print2("%s%s%s" % (rd, err.message, nc))
         logfile.close()
-        toc = time()
+        toc = time.time()
         times.append(toc - tic)
         print2("| %d sec" % (toc - tic))
 
     
-    notify_send = Popen(["which", 'notify-send'], 
-                        stdout=PIPE).communicate()[0].strip()
+    notify_send = subprocess.Popen(["which", 'notify-send'], 
+                        stdout=subprocess.PIPE).communicate()[0].strip()
     if opt.notify and notify_send:
-        Popen(
-              [
+        subprocess.Popen(
+                [
                 'notify-send', 
                 'ftransc - the Audio Converter', 
                 'Converted %d files to %s format\n\t%d PASSED\n\t%d FAILED' % \
                             (total, fmt.upper(), total - fails, fails)
                 ],
-                stdout=PIPE).communicate()
+                stdout=subprocess.PIPE).communicate()
 
     if opt.notify and times:
         print '_' * 80
@@ -452,7 +540,7 @@ if __name__ == "__main__":
         hr = int(sum(times)  / 3600)
         mn = int((sum(times) % 3600) / 60)
         sc = int(sum(times)  % 3600  % 60)
-        print 'total: %d songs converted in %d hours, %d minutes and %d seconds' %\
+        print 'total: %d songs converted in %d hrs, %d min and %d sec' %\
             (total, hr, mn, sc)
         print '_' * 80
 
