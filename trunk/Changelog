@@ -1,3 +1,6 @@
+ftransc 4.2.7 (06 Jan 2012):
+	+ added album art support when converting FROM ogg/flac TO mp3/m4a
+
 ftransc 4.2.6 (05 Jan 2012):
 	+ code cleanup
 	+ added album art support when converting from mp3 to m4a and vice versa

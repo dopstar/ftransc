@@ -23,7 +23,13 @@ FEATURES:
 	3. Metadata support UTF-8 character set.
 	4. Files not ovewritten (unless overridden)
 	5. Extracting audio content from video files.
-    6. Album art preserved during transcoding (MP3 <=> M4A only)
+    6. Album art preserved when transcoding from:
+          6.1 MP3 to M4A
+          6.2 M4A to MP3
+          6.3 OGG to MP3
+          6.4 OGG to M4A
+          6.5 FLAC to MP3
+          6.6 FLAC to M4A
 
 PRESETS:
 -------

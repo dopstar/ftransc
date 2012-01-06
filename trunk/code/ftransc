@@ -6,6 +6,7 @@ ftransc is a script that bundles up utilities for audio conversion.
 import os
 import sys
 import time
+import base64
 import urllib
 import optparse
 import subprocess
@@ -36,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.2.6'
+VERSION = '4.2.7'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -144,8 +145,8 @@ class CoverTag(object):
                         '.mp3'  : 'APIC:',
                         '.m4a'  : 'covr',
                         '.wma'  : None,
-                        '.ogg'  : None,
-                        '.flac' : None,
+                        '.ogg'  : 'metadata_block_picture',
+                        '.flac' : 'metadata_block_picture',
                         '.mpc'  : None,
                     }
 
@@ -175,6 +176,12 @@ class CoverTag(object):
                 self.coverart['data'] = apic.data
             elif ext == '.m4a':
                 self.coverart['data'] = tags[tag][0]
+            elif ext in ('.ogg', '.flac'):
+                print 'ogg extract'
+                encoded_image = tags[tag][0]
+                image = mutagen.flac.Picture(base64.b64decode(encoded_image))
+                self.coverart['data'] = image.data
+                self.coverart['mime'] = image.mime
         elif ext == '.mp3':
             for key in tags:
                 if key.startswith(tag):
@@ -207,7 +214,7 @@ class CoverTag(object):
 
         elif ext == '.mp3':
             audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
-            if self.coverart['ext'] == '.m4a':
+            if self.coverart['ext'] in ('.m4a', '.ogg', '.flac'):
                 apic = mutagen.id3.APIC(
                                             desc     = u'',
                                             encoding = 3,
