@@ -1,3 +1,7 @@
+ftransc 4.2.8 (10 Jan 2012):
+	+ added ability to convert audio files specified in the M3U playlist file
+	via the --m3u option
+
 ftransc 4.2.7 (06 Jan 2012):
 	+ added album art support when converting FROM ogg/flac TO mp3/m4a
 

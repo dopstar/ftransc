@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.2.7'
+VERSION = '4.2.8'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -309,6 +309,24 @@ def print2(msg, noreturn=False):
         else:
             print msg
 
+def m3u_extract(playlist):
+    collection = []
+    if not playlist:
+        return []
+    try:
+        songs = open(playlist, 'r').readlines()
+    except IOError:
+        raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
+
+    for song in songs:
+        song = song.strip()
+        if not song: 
+            break
+        if song.startswith('#'):
+            continue
+        collection.append(song)
+    return collection
+
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {
 }
@@ -364,6 +382,7 @@ if __name__ == "__main__":
             help='Show encoding summary notification')
     parser.add_option('--presets', default='/etc/ftransc/presets.conf',
             help='Use presets from the specified presets configuration file')
+    parser.add_option('--m3u', help='Convert files in the m3u playlist file')
     opt, files = parser.parse_args()
     
     if opt.upgrade:
@@ -417,13 +436,16 @@ if __name__ == "__main__":
     else:
         preset = None
 
-    if len(files) < 1 and opt.walk is None:
+    if len(files) < 1 and opt.walk is None and opt.m3u is None:
         raise SystemExit("ftransc: no input file")
     if opt.walk is not None:
         walker = os.walk(opt.walk)
         dest_dir, dummy, files = walker.next()
         pwd = os.getcwd()
         os.chdir(dest_dir)
+
+    if opt.m3u is not None:
+        files = m3u_extract(opt.m3u)
 
     old_dir = ''
     total = len(files)
