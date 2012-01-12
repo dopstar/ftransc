@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.2.8'
+VERSION = '4.2.9'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -310,22 +310,27 @@ def print2(msg, noreturn=False):
             print msg
 
 def m3u_extract(playlist):
-    collection = []
-    if not playlist:
-        return []
     try:
         songs = open(playlist, 'r').readlines()
     except IOError:
         raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
+    return [s.strip() for s in songs if s and not s.startswith('#')]
 
-    for song in songs:
-        song = song.strip()
-        if not song: 
-            break
-        if song.startswith('#'):
-            continue
-        collection.append(song)
-    return collection
+def pls_extract(playlist):
+    try:
+        songs = open(playlist, 'r').readlines()
+    except IOError:
+        raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
+    return [i.strip().split('file://')[1] \
+            for i in songs if i.strip().startswith('File')] 
+
+def xspf_extract(playlist): 
+    try:
+        songs = open(playlist, 'r').readlines()
+    except IOError:
+        raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
+    return [i.strip().replace('<location>file://', '').replace('</location>', '') \
+            for i in songs if '<location>file://' in i]
 
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {
@@ -383,6 +388,8 @@ if __name__ == "__main__":
     parser.add_option('--presets', default='/etc/ftransc/presets.conf',
             help='Use presets from the specified presets configuration file')
     parser.add_option('--m3u', help='Convert files in the m3u playlist file')
+    parser.add_option('--pls', help='Convert files in the pls playlist file')
+    parser.add_option('--xspf', help='Convert files in the xspf playlist file')
     opt, files = parser.parse_args()
     
     if opt.upgrade:
@@ -436,7 +443,7 @@ if __name__ == "__main__":
     else:
         preset = None
 
-    if len(files) < 1 and opt.walk is None and opt.m3u is None:
+    if len(files) < 1 and not opt.walk and not opt.m3u and not opt.pls and not opt.xspf:
         raise SystemExit("ftransc: no input file")
     if opt.walk is not None:
         walker = os.walk(opt.walk)
@@ -446,6 +453,10 @@ if __name__ == "__main__":
 
     if opt.m3u is not None:
         files = m3u_extract(opt.m3u)
+    elif opt.pls is not None:
+        files = pls_extract(opt.pls)
+    elif opt.xspf is not None:
+        files = xspf_extract(opt.xspf)
 
     old_dir = ''
     total = len(files)

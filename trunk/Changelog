@@ -1,3 +1,7 @@
+ftransc 4.2.9 (13 Jan 2012):
+	+ added ability to convert audio files specified in PLS playlist file and
+	XSPF playlist file via the --pls option and the --xspf option, resp.
+
 ftransc 4.2.8 (10 Jan 2012):
 	+ added ability to convert audio files specified in the M3U playlist file
 	via the --m3u option
