@@ -5,7 +5,7 @@ import sys
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.2.9'
+VERSION = '4.3.0'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -148,7 +148,11 @@ class Window(QtGui.QDialog):
                 opts += ' --unlock'
 
             self.filesTable.repaint()
-            os.system('ftransc %s "%s" > /dev/null 2>&1' % (opts, filename))
+            x = os.system('ftransc %s "%s" > /dev/null 2>&1' % (opts, filename))
+            if x != 0:
+                print 'Failed converting $s' % filename
+            else:
+                print "x=", x
             self.filesTable.removeRow(0)
             self.filesTable.repaint()
 

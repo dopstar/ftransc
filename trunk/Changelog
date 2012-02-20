@@ -1,3 +1,8 @@
+ftransc 4.3.0 (20 Feb 2012):
+	+ added the -o/--outdir option
+	+ fixed potential bug with --upgrade
+	+ refined parsing of playlist files
+
 ftransc 4.2.9 (13 Jan 2012):
 	+ added ability to convert audio files specified in PLS playlist file and
 	XSPF playlist file via the --pls option and the --xspf option, resp.

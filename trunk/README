@@ -31,6 +31,7 @@ FEATURES:
           6.5 FLAC to MP3
           6.6 FLAC to M4A
     7. Convert files from .m3u, .pls and .xspf playlist files
+    8. Place converted files into another folder
 
 PRESETS:
 -------
