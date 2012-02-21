@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.3.0'
+VERSION = '4.3.1'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -56,6 +56,7 @@ class MetaTag(object):
             'year'          : mutagen.id3.TDRC, 
             'tracknumber'   : mutagen.id3.TRCK,
             'composer'      : mutagen.id3.TCOM,
+            'lyrics'        : mutagen.id3.USLT,
         }
         __opener = {
             '.mp3'          : mutagen.mp3.Open,
@@ -104,6 +105,10 @@ class MetaTag(object):
             for tag, key in self.__tag_mapping[ext].items():
                 if key in tags:
                     self.tags[tag] = tags[key][0]
+                elif tag == 'lyrics' and key == 'USLT':
+                    for id3tag in tags:
+                        if id3tag.startswith(key):
+                            self.tags[tag] = tags[id3tag].text
     
     def insert(self, output_file):
         """
@@ -121,8 +126,16 @@ class MetaTag(object):
                 len(value) == 2:
                 value = '%d/%d' % (value[0], value[1])
             if ext == '.mp3':
-                tags[self.__tag_mapping[ext][tag]] = \
-                self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])
+                if tag == 'lyrics':
+                    tags[self.__tag_mapping[ext][tag]] = \
+                                    self.__id3_mapping[tag](encoding=3, 
+                                                            lang='eng', 
+                                                            desc='lyrics',
+                                                            text=u'%s' % value)
+                else:
+                    tags[self.__tag_mapping[ext][tag]] = \
+                                self.__id3_mapping[tag](encoding=3, 
+                                                        text=[u'%s' % value])
             elif ext in self.exts and ext != '.mp3':
                 if tag == 'tracknumber' and ext == '.m4a':
                     try:

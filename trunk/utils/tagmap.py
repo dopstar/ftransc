@@ -8,6 +8,7 @@ tags = {
             'tracknumber' : 'TRCK',
             'composer'    : 'TCOM',
             'publisher'   : 'TPUB',
+            'lyrics'      : 'USLT',
         },
         '.wma': {
             'artist'      : 'Author',
@@ -18,6 +19,7 @@ tags = {
             'tracknumber' : 'WM/TrackNumber',
             'composer'    : 'WM/Composer',
             'publisher'   : 'WM/Publisher',
+            'lyrics'      : 'WM/Lyrics',
             },
         '.wmv': {
             'artist'      : 'Author',
@@ -28,6 +30,7 @@ tags = {
             'tracknumber' : 'WM/TrackNumber',
             'composer'    : 'WM/Composer',
             'publisher'   : 'WM/Publisher',
+            'lyrics'      : 'WM/Lyrics',
             },
         '.m4a': {
             'artist'      : '\xa9ART',
@@ -37,6 +40,7 @@ tags = {
             'year'        : '\xa9day',
             'tracknumber' : 'trkn',
             'composer'    : '\xa9wrt',
+            'lyrics'      : '\xa9lyr',
             },
         '.ogg': {
             'artist'      : 'artist',

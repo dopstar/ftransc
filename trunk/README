@@ -32,6 +32,13 @@ FEATURES:
           6.6 FLAC to M4A
     7. Convert files from .m3u, .pls and .xspf playlist files
     8. Place converted files into another folder
+    9. Lyrics are preserved when converting from:
+        9.1 MP3 to M4A
+        9.2 M4A to MP3
+        9.3 MP3 to WMA
+        9.4 WMA to MP3
+        9.5 WMA to M4A
+        9.6 M4A to WMA
 
 PRESETS:
 -------
@@ -67,6 +74,10 @@ INSTALLATION:
             'cd ftransc'
         2.2.3 Install ftransc into your system:
             'sudo make uninstall; sudo make install'
+ 
+ 3. Upgrading ftransc;
+    3.1 if you already have ftransc installed, you can upgrade it by running:
+        'sudo ftransc --upgrade'
             
 UNINSTALLATION:
 ---------------
