@@ -66,7 +66,7 @@ followed by the next one, until all input files are converted.
 Conversion steps:
 
  # A lockfile corresponding to the input file is created, if it exists already, then the file is skipped because its already locked.
- # Then, the metadata tags are copied from the input file. Not all tags are copied, only *title*, *artist*, *album*, *genre*, *track number*, and album/song release *date/year* are copied. The character encoding used to handle metadata tags is UTF-8.
+ # Then, the metadata tags are copied from the input file. See [#ftransc_Metadata_Tags this] or a list of supported tags.
  # The input file is converted to the the desired audio format. The input file is not changed in any way. 
  # When the second step, above, has finised successfully, the metadata tags that were copied, if any, are then inserted into the newly created file.
  # A lockfile corresponding to the input file is deleted.
