@@ -106,3 +106,23 @@ Example 5 - convert all audio audio files (and extract all audio content from vi
 ftransc uses quality presets called 'insane', 'extreme', 'high', 'normal', 'low', and 'tiny'. These presets are specified by the '-q' or '--quality' option of ftransc and are defined in the '/etc/ftransc/presets.conf' configuration file. 
 
 The '/etc/ftransc/presets.conf' presets file can be overriden by use of the --presets option and specify the custom presets file to use or, if you know what you are doing, make changes directly on the it.
+
+The contents of the presets.conf file can be viewed [http://code.google.com/p/ftransc/source/browse/trunk/config/presets.conf here]
+
+== ftransc Metadata Tags == 
+
+The following is the list of supported tags across audio formats that ftransc can encode to. N means the tag is not supported and hence is lost during conversion. Y means the tag is supported and is present on the new file after conversion:
+
+|| *tag* || *m4a* || *mp3* || *ogg* || *flac* || *wma* || *mpc* || *wav* ||
+|| title  || Y || Y || Y || Y || Y || Y || N ||
+|| artist || Y || Y || Y || Y || Y || Y || N ||
+|| album  || Y || Y || Y || Y || Y || Y || N ||
+|| genre  || Y || Y || Y || Y || Y || Y || N ||
+|| date   || Y || Y || Y || Y || Y || Y || N ||
+|| tracknumber || Y || Y || Y || Y || Y || Y || N ||
+|| composer    || Y || Y || Y || Y || Y || Y || N ||
+|| publisher   || N || Y || N || N || Y || N || N ||
+|| lyrics || Y || Y || N || N || Y || N || N ||
+|| album art   || Y || Y || N || N || N || N || N ||
+|| album artist || N || N || N || N || N || N || N ||
+|| comment     || N || N || N || N || N || N || N ||
