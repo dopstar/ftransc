@@ -5,7 +5,7 @@ import sys
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.3.1'
+VERSION = '4.3.2'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -14,18 +14,25 @@ class Window(QtGui.QDialog):
         add_files_button = self.createButton("&Add Files", self.add_files)
         convert_button   = self.createButton("Conv&ert", self.convert)
         cancel_button    = QtGui.QPushButton("&Close")
+        browse_button    = self.createButton("&Output Folder", self.browse)
 
         self.delete_original_checkbox = QtGui.QCheckBox("&Delete")
         self.overwrite_checkbox       = QtGui.QCheckBox("Over&write")
         self.unlock_checkbox          = QtGui.QCheckBox("&Unlock")
+        self.foldername               = QtGui.QLabel("")
+        self.foldername.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
 
         head_layout = QtGui.QHBoxLayout()
         body_layout = QtGui.QVBoxLayout()
         foot_layout = QtGui.QHBoxLayout()
+        browse_layout = QtGui.QHBoxLayout()
         codec_layout = QtGui.QHBoxLayout()
 
         head_layout.addWidget(add_files_button)
+        head_layout.addWidget(browse_button)
         head_layout.addSpacing(500)
+
+        browse_layout.addWidget(self.foldername)
 
         codec_label = QtGui.QLabel("Convert To:")
         self.codec_combobox = QtGui.QComboBox()
@@ -91,6 +98,7 @@ class Window(QtGui.QDialog):
         self.createFilesTable()
 
         body_layout.addLayout(head_layout)
+        body_layout.addLayout(browse_layout)
         body_layout.addWidget(self.filesTable)
         body_layout.addLayout(foot_layout)
 
@@ -122,6 +130,12 @@ class Window(QtGui.QDialog):
             self.filesTable.setItem(row, 0, fname)
             self.filesTable.setItem(row, 1, status)
 
+    def browse(self):
+        folder = QtGui.QFileDialog.getExistingDirectory(self,
+                                                       'Add output folder',
+                                                      QtCore.QDir.currentPath())
+        if folder is not None or folder != '':
+            self.foldername.setText(folder)
 
     def convert(self):
         row_count = self.filesTable.rowCount()
@@ -139,23 +153,20 @@ class Window(QtGui.QDialog):
             self.filesTable.repaint()
             
             opts = "--format %s" % audio_codec
-            opts += " --quality %s" %audio_quality
+            opts += " --quality %s" % audio_quality
             if self.overwrite_checkbox.isChecked():
                 opts += ' --over'
             if self.delete_original_checkbox.isChecked():
                 opts += ' --remove'
             if self.unlock_checkbox.isChecked():
                 opts += ' --unlock'
+            if self.foldername.text():
+                opts += ' --outdir %s' % self.foldername.text()
 
             self.filesTable.repaint()
             x = os.system('ftransc %s "%s" > /dev/null 2>&1' % (opts, filename))
-            if x != 0:
-                print 'Failed converting $s' % filename
-            else:
-                print "x=", x
             self.filesTable.removeRow(0)
             self.filesTable.repaint()
-
 
 
     def createFilesTable(self):

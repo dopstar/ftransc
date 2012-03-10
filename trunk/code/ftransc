@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.3.1'
+VERSION = '4.3.2'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -92,6 +92,7 @@ class MetaTag(object):
                 'genre'         : None, 
                 'tracknumber'   : None,
                 'composer'      : None,
+                'lyrics'        : None,
         }
         self.extract()
     

@@ -9,6 +9,8 @@ tags = {
             'composer'    : 'TCOM',
             'publisher'   : 'TPUB',
             'lyrics'      : 'USLT',
+            'disk'        : 'TPOS',
+            'comment'     : 'COMM',
         },
         '.wma': {
             'artist'      : 'Author',
@@ -20,6 +22,7 @@ tags = {
             'composer'    : 'WM/Composer',
             'publisher'   : 'WM/Publisher',
             'lyrics'      : 'WM/Lyrics',
+            'albumartist' : 'WM/AlbumArtist',
             },
         '.wmv': {
             'artist'      : 'Author',
@@ -41,6 +44,10 @@ tags = {
             'tracknumber' : 'trkn',
             'composer'    : '\xa9wrt',
             'lyrics'      : '\xa9lyr',
+            'albumartist' : 'aART',
+            'disk'        : 'disk',
+            'comment'     : '\xa9cmt',
+
             },
         '.ogg': {
             'artist'      : 'artist',
