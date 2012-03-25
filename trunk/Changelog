@@ -1,3 +1,6 @@
+ftransc 4.3.3 (25 Mar 2012):
+	+ fixed fatal KeyError when converting .aac and .mp4 files
+
 ftransc 4.3.2 (10 Mar 2012):
 	+ added album artist, disk number, and comment metadata tags to some
 	formats

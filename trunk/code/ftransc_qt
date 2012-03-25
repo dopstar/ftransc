@@ -5,7 +5,7 @@ import sys
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.3.2'
+VERSION = '4.3.3'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None):
