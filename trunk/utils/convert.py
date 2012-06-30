@@ -62,7 +62,7 @@ def convert_to_flac(filename, ext, stderr_out, outdir, preset=None):
     cmd.extend(["-f", "-o", outdir + filename + ".flac", filename + ".wav"])
     return convert(stderr_out, cmdline1=cmd)
 
-def convert_to_mpc(filename, ext, stderr_out, preset=''):
+def convert_to_mpc(filename, ext, stderr_out, outdir, preset=None):
     """
     converts input track into Musepack audio format
     """

@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.3.3'
+VERSION = '4.3.4'
 LOGFILE = '/dev/null'
 SILENT  = False
 
