@@ -1,3 +1,7 @@
+ftransc 4.3.5 (14 Jul 2012):
+	+ fixed bug with ftransc plugin for rhythmbox when filenames with spaces
+	are involved.
+
 ftransc 4.3.4 (30 Jun 2012):
 	+ added Rhythmbox plugin
 	+ fixed fatal KeyError when converting to .mpc format

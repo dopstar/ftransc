@@ -25,7 +25,7 @@ try:
 except ImportError:
     NO_TAGS = True
 
-from ftransc.utils import tagmap
+from ftransc.utils import tagmap, m3u_extract, pls_extract, xspf_extract
 from ftransc.utils.convert import (
                                     convert_to_wav,
                                     convert_to_wma,
@@ -37,7 +37,7 @@ from ftransc.utils.convert import (
                                   )
 
 #_______ global vars _________
-VERSION = '4.3.4'
+VERSION = '4.3.5'
 LOGFILE = '/dev/null'
 SILENT  = False
 
@@ -323,27 +323,6 @@ def print2(msg, noreturn=False):
             print msg,
         else:
             print msg
-
-def read_playlist(playlist):
-    try:
-        return open(playlist, 'r').readlines()
-    except IOError:
-        raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
-
-def m3u_extract(playlist):
-    songs = [s.replace('file:/', '') for s in read_playlist(playlist) if s]
-    return [urllib.url2pathname(song.strip()) for song in songs \
-            if song and not song.startswith('#')]
-
-def pls_extract(playlist):
-    songs = read_playlist(playlist)
-    return [i.strip().split('file://')[1] \
-            for i in songs if i.strip().startswith('File')] 
-
-def xspf_extract(playlist): 
-    songs = read_playlist(playlist)
-    return [urllib.url2pathname(song.strip().replace('<location>file://', '').replace('</location>', '')) \
-            for song in songs if '<location>file://' in song]
 
 supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
 quality_presets = {

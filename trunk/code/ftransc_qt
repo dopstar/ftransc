@@ -6,7 +6,9 @@ import copy
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.3.4'
+from ftransc.utils import m3u_extract
+
+VERSION = '4.3.5'
 
 class Window(QtGui.QDialog):
     def __init__(self, parent=None, cmdlinefiles=None):
@@ -210,10 +212,9 @@ class Window(QtGui.QDialog):
         else:
             return QtGui.QTableWidget.keyPressEvent(self.filesTable, event)
 
-
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    window = Window(cmdlinefiles=sys.argv[1:])
+    window = Window(cmdlinefiles=m3u_extract(sys.argv[1:], mode='playlist'))
     window.show()
     sys.exit(app.exec_())
 
