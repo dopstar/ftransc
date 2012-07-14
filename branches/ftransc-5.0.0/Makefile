@@ -21,6 +21,8 @@ install:
 	install -m 644 utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	install -m 644 utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	install -m 644 utils/convert.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 utils/constants.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 utils/metadata.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
 
 uninstall:
