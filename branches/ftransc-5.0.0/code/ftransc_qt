@@ -5,10 +5,12 @@ import sys
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-VERSION = '4.3.3'
+from ftransc.utils import m3u_extract
+
+from ftransc.utils.constants import VERSION
 
 class Window(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, cmdlinefiles=None):
         super(Window, self).__init__(parent)
 
         add_files_button = self.createButton("&Add Files", self.add_files)
@@ -112,15 +114,24 @@ class Window(QtGui.QDialog):
                      QtGui.qApp, 
                      QtCore.SLOT('quit()'))
 
-    def add_files(self):
-        filt = "All Files (*)";
-        filt += ";;Audio Files (*.mp3 *.wma *.aac *.mp4 *.m4a *.flac *.ogg"
-        filt += " *.mpc *.mka *.mp+ *.ape *.wv *.wav *.aiff)"
-        filt += ";;Video Files (*.avi *.flv *.mpg *.mpeg *.vob *.divx *.mkv *.mp4)"
-        files = QtGui.QFileDialog.getOpenFileNames(self,
-                                                   'Add files to convert',
-                                                   QtCore.QDir.currentPath(),
-                                                   filt)
+        if cmdlinefiles is not None:
+            self.cmdlinefiles = cmdlinefiles
+            self.add_files(noninteractive=True)
+            self.cmdlinefiles = None
+
+
+    def add_files(self, noninteractive=False):
+        if noninteractive:
+            files = self.cmdlinefiles
+        else:
+            filt = "All Files (*)";
+            filt += ";;Audio Files (*.mp3 *.wma *.aac *.mp4 *.m4a *.flac *.ogg"
+            filt += " *.mpc *.mka *.mp+ *.ape *.wv *.wav *.aiff)"
+            filt += ";;Video Files (*.avi *.flv *.mpg *.mpeg *.vob *.divx *.mkv *.mp4)"
+            files = QtGui.QFileDialog.getOpenFileNames(self,
+                                                       'Add files to convert',
+                                                       QtCore.QDir.currentPath(),
+                                                       filt)
 
         for i in files:
             fname = QtGui.QTableWidgetItem(i)
@@ -201,7 +212,7 @@ class Window(QtGui.QDialog):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    window = Window()
+    window = Window(cmdlinefiles=m3u_extract(sys.argv[1:], mode='playlist'))
     window.show()
     sys.exit(app.exec_())
 

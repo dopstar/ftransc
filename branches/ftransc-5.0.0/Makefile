@@ -24,6 +24,7 @@ install:
 	install -m 644 utils/constants.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	install -m 644 utils/metadata.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
+	{ which rhythmbox && cp -r plugins/ftransc /usr/lib/rhythmbox/plugins; } || :
 
 uninstall:
 	rm -f /usr/local/bin/ftransc
@@ -33,3 +34,4 @@ uninstall:
 	rm -r -f ~/.gnome2/nautilus-scripts/ftransc
 	rm -r -f /etc/ftransc
 	rm -r -f /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc
+	rm -r -f /usr/lib/rhythmbox/plugins/ftransc

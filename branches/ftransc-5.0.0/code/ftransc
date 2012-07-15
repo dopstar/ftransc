@@ -32,6 +32,10 @@ from ftransc.utils import (
                             upgrade_version,
                             check_deps,
                             print2,
+                            m3u_extract,
+                            pls_extract,
+                            xspf_extract,
+                            rip_compact_disc,
                           )
 from ftransc.utils.metadata import MetaTag, CoverTag
 
@@ -96,6 +100,8 @@ if __name__ == "__main__":
     parser.add_option('--xspf', help='Convert files in the xspf playlist file')
     parser.add_option('-o', '--outdir', 
             help='Put converted file into specified folder')
+    parser.add_option('--cd', '--cdrip', dest='cdrip', action='store_true',
+                      default=False, help='rip Compact Disc (CD) digital audio')
     opt, files = parser.parse_args()
     
     if opt.upgrade:
@@ -149,7 +155,8 @@ if __name__ == "__main__":
     else:
         preset = None
 
-    if len(files) < 1 and not opt.walk and not opt.m3u and not opt.pls and not opt.xspf:
+    if len(files) < 1 and not opt.walk and not \
+        opt.m3u and not opt.pls and not opt.xspf and not opt.cdrip:
         raise SystemExit("ftransc: no input file")
     if opt.walk is not None:
         walker = os.walk(opt.walk)
@@ -172,6 +179,9 @@ if __name__ == "__main__":
         files = pls_extract(opt.pls)
     elif opt.xspf is not None:
         files = xspf_extract(opt.xspf)
+    if opt.cdrip == True:
+        files = rip_compact_disc()
+        
 
     old_dir = ''
     total = len(files)
@@ -260,12 +270,6 @@ if __name__ == "__main__":
                 continue
                 #___________ audio convert ______________
             ifilename, in_ext = os.path.splitext(ifile)
-            if not SILENT:
-                os.system('printf "to %s | %s%s%s ... "' %\
-                          (fmt.upper(), bl, ifile, nc))
-            else:
-                print2('to %s | %s%s%s ...' %\
-                       (fmt.upper(), bl, ifile, nc))
             if converters[fmt](ifilename, in_ext, logfile, outdir, preset=preset):
                 print2("to %s | %s%s%s | %sSuccess%s" % (fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
                 if opt.remove:

@@ -93,8 +93,12 @@ def read_playlist(playlist):
     except IOError:
         raise SystemExit('unable to read playlist file: %s' % (str(playlist)))
 
-def m3u_extract(playlist):
-    songs = [s.replace('file:/', '') for s in read_playlist(playlist) if s]
+def m3u_extract(playlist, mode=None):
+    if mode == 'playlist':
+        playlist = playlist
+    else:
+        playlist = read_playlist(playlist)
+    songs = [s.replace('file:/', '') for s in playlist if s]
     return [urllib.url2pathname(song.strip()) for song in songs \
             if song and not song.startswith('#')]
 
@@ -107,4 +111,18 @@ def xspf_extract(playlist):
     songs = read_playlist(playlist)
     return [urllib.url2pathname(song.strip().replace('<location>file://', '').replace('</location>', '')) \
             for song in songs if '<location>file://' in song]
+
+def rip_compact_disc():
+    base_folder = os.path.expanduser('~/ftransc/ripped_albums')
+    os.system('mkdir -p %s' % base_folder)
+    walker = os.walk(base_folder)
+    parent_folder, child_folders, child_files = walker.next()
+    dest_folder = 'CD-%d' % (len(child_folders) + 1)
+    os.system('mkdir -p %s/%s' % (base_folder, dest_folder))
+    os.chdir('%s/%s' % (base_folder, dest_folder))
+    os.system('cdparanoia -Q')
+    os.system('cdparanoia -B')
+    walker = os.walk('%s/%s' % (base_folder, dest_folder))
+    parent_folder, child_folders, child_files = walker.next()
+    return child_files
 
