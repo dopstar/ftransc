@@ -41,7 +41,7 @@ from ftransc.utils.metadata import MetaTag, CoverTag
 
 
 
-supported_formats = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])
+
 quality_presets = {}
 converters = {
         "mp3"   : convert_to_mp3, 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     home = os.getcwd()
     fmt = opt.format.lower()
     qual = opt.quality.lower()
-    check_deps(check=opt.check)
+    supported_formats = check_deps(check=opt.check)
     if fmt in ("mp4", "m4a", "aac"): 
         fmt = "m4a"
     if fmt in ("mpc", "musepack"):
@@ -217,25 +217,25 @@ if __name__ == "__main__":
                     os.chdir(home)
 
             if ofile == ifile:
-                print2("%s%s%s | input = output | %sskipped%s" %\
+                print2("%s%s%s | input = output | %sskipped%s\n" %\
                        (bl, ifile, nc, yl, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if not os.path.exists(ifile):
-                print2("%s%s%s | %sdoes not exist%s" %\
+                print2("%s%s%s | %sdoes not exist%s\n" %\
                        (bl, ifile, nc, rd, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if os.path.isfile(ofile) and not opt.overwrite:
-                print2("%s%s%s | use '-w' to overwrite | %sskipped%s" %\
+                print2("%s%s%s | use '-w' to overwrite | %sskipped%s\n" %\
                        (bl, ifile, nc, yl, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if os.path.isdir(ifile) and opt.walk is None:
-                print2("%s%s%s |  use '--directory' | %sskipped%s" %\
+                print2("%s%s%s |  use '--directory' | %sskipped%s\n" %\
                        (bl, ifile, nc, yl, nc))
                 fails += 1
                 input_q.task_done()
@@ -243,7 +243,7 @@ if __name__ == "__main__":
                 #_____________ lockfile creation ________________
             swp_file = ".%s.swp" % ifile
             if os.path.isfile(swp_file) and not opt.unlock:
-                print2("%s%s%s | use '-u' to unlock | %sskipped%s" %\
+                print2("%s%s%s | use '-u' to unlock | %sskipped%s\n" %\
                        (bl, ifile, nc, yl, nc))
                 fails += 1
                 input_q.task_done()
@@ -262,7 +262,7 @@ if __name__ == "__main__":
                     metadata = MetaTag(ifile)
                     albumart = CoverTag(ifile)
             except IOError:
-                print2("%s%d/%d%s | %s%s%s | %sUnreadable%s"  %\
+                print2("%s%d/%d%s | %s%s%s | %sUnreadable%s\n"  %\
                        (bl, ifile, nc, rd, nc))
                 dummy = os.remove(swp_file)
                 fails += 1
@@ -271,14 +271,14 @@ if __name__ == "__main__":
                 #___________ audio convert ______________
             ifilename, in_ext = os.path.splitext(ifile)
             if converters[fmt](ifilename, in_ext, logfile, outdir, preset=preset):
-                print2("to %s | %s%s%s | %sSuccess%s" % (fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
+                print2("to %s | %s%s%s | %sSuccess%s\n" % (fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
                 if opt.remove:
                     dummy = os.remove(ifile)
                 if fmt.lower() == "flac":
                     dummy = os.remove(ifilename + '.wav')
                 dummy = os.remove(swp_file)
             else:
-                print2("to %s | %s%s%s | %sFail%s" % (fmt.upper(), bl, ifile, nc, rd, nc), noreturn=True)
+                print2("to %s | %s%s%s | %sFail%s\n" % (fmt.upper(), bl, ifile, nc, rd, nc), noreturn=True)
                 dummy = os.remove(swp_file)
                 fails += 1
                 input_q.task_done()
@@ -292,7 +292,7 @@ if __name__ == "__main__":
                     del albumart
             except Exception, err:
                 if opt.debug:
-                    print2("%s%s%s" % (rd, err.message, nc))
+                    print2("%s%s%s\n" % (rd, err.message, nc))
             logfile.close()
             toc = time.time()
             times.append(toc - tic)

@@ -2,12 +2,30 @@ import os
 import urllib
 import subprocess
 
+from ftransc.utils.constants import SUPPORTED_FORMATS
+
+def show_dep_status(dep_name, dep_status, deps, SUPPORTED_FORMATS, check=False):
+    rd = "\033[0;31m"   #red
+    gr = "\033[0;32m"   #green
+    nc = "\033[0m"      #no color
+    if dep_status:
+        if check:
+            print2(dep_name + '...' + gr + " installed" + nc)
+    else:
+        if check:
+            print2("%s_______ %s not installed _______%s" % (rd, dep_name, nc))
+        if deps:
+            for fmt in deps[dep_name]:
+                SUPPORTED_FORMATS.remove(fmt)
+                
+            return SUPPORTED_FORMATS
+
 def check_deps(check=False):
     """
     checks whether all dependencies for this script are installed or not.
     """
     deps = {
-            'mutagen-inspect'   : [],
+            'cdparanoia'        : [],
             'ffmpeg'            : [
                                     'mp3', 
                                     'ogg', 
@@ -23,19 +41,26 @@ def check_deps(check=False):
             'oggenc'            : ['ogg'],
             'mppenc'            : ['mpc'],
             }
+    module_map = {
+                    'python-mutagen': 'mutagen',
+                    'python-qt4'    : 'PyQt4',
+                 }
     for dep in deps:
-        pkg = subprocess.Popen(["which", dep], 
-                               stdout=subprocess.PIPE).communicate()[0].strip() 
-        if check:
-            print2(dep + '...' + rd + " not installed" + nc if not pkg \
-                    else dep + '...' + gr + " installed" + nc)
-        else:
-            if not pkg:
-                print2("%s_______ %s not installed _______%s" % (rd, dep, nc))
-                for fmt in deps[dep]:
-                    supported_formats.remove(fmt)
+        status = subprocess.Popen(["which", dep], 
+                                   stdout=subprocess.PIPE).communicate()[0].strip() 
+        show_dep_status(dep, status, deps, SUPPORTED_FORMATS)
+
+    for pkg, mod in module_map.iteritems():
+        try:
+            import mod
+            show_dep_status(pkg, False, {}, [], check=check) #negative logic
+        except ImportError:
+            show_dep_status(pkg, True, {}, [], check=check)
     if check:
         raise SystemExit(0)
+
+    return SUPPORTED_FORMATS
+
 
 def upgrade_version(current_version):
     """
@@ -120,8 +145,9 @@ def rip_compact_disc():
     dest_folder = 'CD-%d' % (len(child_folders) + 1)
     os.system('mkdir -p %s/%s' % (base_folder, dest_folder))
     os.chdir('%s/%s' % (base_folder, dest_folder))
-    os.system('cdparanoia -Q')
-    os.system('cdparanoia -B')
+    print 'Ripping Compact Disc (CD)...'
+    os.system('cdparanoia -B >/dev/null 2>&1')
+    print 'Finished ripping CD'
     walker = os.walk('%s/%s' % (base_folder, dest_folder))
     parent_folder, child_folders, child_files = walker.next()
     return child_files
