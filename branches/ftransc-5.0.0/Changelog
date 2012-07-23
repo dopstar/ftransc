@@ -1,3 +1,6 @@
+ftransc 5.0.3 (23 Jul 2012):
+	+ moved away from ffmpeg to avconv
+
 ftransc 5.0.2 (15 Jul 2012):
 	+ added rhythmbox plugin
 	+ added CD ripping via cdparanoia

@@ -38,7 +38,7 @@ class Window(QtGui.QDialog):
 
         codec_label = QtGui.QLabel("Convert To:")
         self.codec_combobox = QtGui.QComboBox()
-        ffmpeg  = Popen(['which', 'ffmpeg'], 
+        avconv  = Popen(['which', 'avconv'], 
                         stdout=PIPE, 
                         stderr=PIPE).communicate()[0]
 
@@ -62,17 +62,17 @@ class Window(QtGui.QDialog):
                          stdout=PIPE, 
                          stderr=PIPE).communicate()[0]
 
-        if ffmpeg and faac:
+        if avconv and faac:
             self.codec_combobox.addItem("aac")
-        if ffmpeg and flac:
+        if avconv and flac:
             self.codec_combobox.addItem("flac")
-        if ffmpeg and musepack:
+        if avconv and musepack:
             self.codec_combobox.addItem("mpc")
-        if ffmpeg and lame:
+        if avconv and lame:
             self.codec_combobox.addItem("mp3")
-        if ffmpeg and vorbis:
+        if avconv and vorbis:
             self.codec_combobox.addItem("ogg")
-        if ffmpeg:
+        if avconv:
             self.codec_combobox.addItem("wav")
             self.codec_combobox.addItem("wma")
         

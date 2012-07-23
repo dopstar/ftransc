@@ -51,14 +51,15 @@ REQUIREMENTS:
 -------------
  The following programs are REQUIRED and should be already installed in your 
 system: 
-	'lame', 'ffmpeg', 'vorbis-tools', 'faac', 'flac', 'python-mutagen', 'mppenc'
+	'lame', 'avconv', 'vorbis-tools', 'faac', 'flac', 'python-mutagen', 'mppenc',
+    'python-qt4'
 	
 INSTALLATION:
 -------------
  1. Install dependencies by running on Terminal:
-	'sudo apt-get install lame ffmpeg faac vorbis-tools python-mutagen flac mppenc'
+	'sudo apt-get install lame libav-tools faac vorbis-tools python-mutagen flac mppenc python-qt4'
 
- 2. Installing ftransc:
+ 2. Installing ftransc for the first time:
     2.1 Installing from a .tar.gz source code:
         2.1.1 Extract the ftransc source code tar archive:
         	'tar xzvf ftransc-1.0.tar.gz'
