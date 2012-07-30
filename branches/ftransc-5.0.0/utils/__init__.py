@@ -48,7 +48,7 @@ def check_deps(check=False):
     for dep in deps:
         status = subprocess.Popen(["which", dep], 
                                    stdout=subprocess.PIPE).communicate()[0].strip() 
-        show_dep_status(dep, status, deps, SUPPORTED_FORMATS)
+        show_dep_status(dep, status, deps, SUPPORTED_FORMATS, check=check)
 
     for pkg, mod in module_map.iteritems():
         try:
