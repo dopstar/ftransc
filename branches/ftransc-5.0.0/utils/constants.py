@@ -1,6 +1,6 @@
 #!/usr/bin/python
 NO_TAGS             = False
 SILENT              = False  
-VERSION             = '5.0.3'
+VERSION             = '5.0.4'
 LOGFILE             = '/dev/null'
 SUPPORTED_FORMATS   = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc'])

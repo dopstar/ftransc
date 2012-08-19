@@ -1,3 +1,7 @@
+ftransc 5.0.4 (19 Aug 2012):
+	+ added --list-formats option
+	+ added --processes/-p option
+
 ftransc 5.0.3 (23 Jul 2012):
 	+ moved away from ffmpeg to avconv
 

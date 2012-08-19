@@ -39,6 +39,9 @@ FEATURES:
         9.4 WMA to MP3
         9.5 WMA to M4A
         9.6 M4A to WMA
+    10. Parallel processes on multi CPU computers.
+    11. Ripping of Compact Disc Digital Audio (CD).
+    12. Custom audio presets support.
 
 PRESETS:
 -------

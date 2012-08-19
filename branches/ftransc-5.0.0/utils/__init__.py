@@ -20,7 +20,7 @@ def show_dep_status(dep_name, dep_status, deps, SUPPORTED_FORMATS, check=False):
                 
             return SUPPORTED_FORMATS
 
-def check_deps(check=False):
+def check_deps(check=False, list_formats=False):
     """
     checks whether all dependencies for this script are installed or not.
     """
@@ -58,13 +58,21 @@ def check_deps(check=False):
             show_dep_status(pkg, True, {}, [], check=check)
     if check:
         raise SystemExit(0)
+    if list_formats:
+        supported_formats = list(SUPPORTED_FORMATS)
+        supported_formats.sort()
+        print "Supported Formats:"
+        for fmt in supported_formats:
+            print "\t%s" % fmt
+        raise SystemExit(0)
+
 
     return SUPPORTED_FORMATS
 
 
 def upgrade_version(current_version):
     """
-    upgrades to the current available version
+    upgrades to the latest available version
     """
     
     trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
