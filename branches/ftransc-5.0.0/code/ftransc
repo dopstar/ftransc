@@ -105,7 +105,7 @@ if __name__ == "__main__":
                       default=False, help='rip Compact Disc (CD) digital audio')
     parser.add_option('--list-formats', dest='list_formats', action='store_true', default=False,
             help='Show available audio formats to convert to')
-    parser.add_option('-p', '--processes', dest='num_pocs', default=0, type=int, 
+    parser.add_option('-p', '--processes', dest='num_procs', default=0, type=int, 
             help='Use the specified number of parallel processes. CPU count is the maximum.')
     opt, files = parser.parse_args()
     
