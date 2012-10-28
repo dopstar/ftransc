@@ -21,6 +21,7 @@ class MetaTag(object):
     handles tag extraction and insertion into and/or from audio files
     """
     __tag_mapping = tagmap.copy()
+    exts = __tag_mapping.keys()
     
     if not NO_TAGS:
         __id3_mapping = {
@@ -45,18 +46,6 @@ class MetaTag(object):
         __id3_mapping = {}
         __opener      = {}
 
-    exts = (    
-                '.ogg', 
-                '.mp3', 
-                '.flac', 
-                '.mp4', 
-                '.aac', 
-                '.m4a',
-                '.mpc', 
-                '.wma', 
-                '.wmv',
-           )
-
     def __init__(self, input_file):
         self.input_file = input_file
         self.tags = {
@@ -68,6 +57,13 @@ class MetaTag(object):
                 'tracknumber'   : None,
                 'composer'      : None,
                 'lyrics'        : None,
+                'albumart'      : None,
+        }
+        self.coverart = {
+            'mime'  : 'image/jpeg',
+            'type'  : 3,
+            'ext'   : None,
+            'data'  : None,
         }
         self.extract()
     
@@ -75,17 +71,43 @@ class MetaTag(object):
         """
         extracts metadata tags from the audio file
         """
-        tags = mutagen.File(self.input_file)
         ext = os.path.splitext(self.input_file)[1].lower()
         if ext in self.exts:
-            for tag, key in self.__tag_mapping[ext].items():
-                if key in tags:
+            tags = mutagen.File(self.input_file)
+            for tag, key in self.__tag_mapping[ext].iteritems():
+                if tag == 'albumart':
+                    self._extract_albumart(ext, tags)
+                elif key in tags:
                     self.tags[tag] = tags[key][0]
                 elif tag == 'lyrics' and key == 'USLT':
                     for id3tag in tags:
                         if id3tag.startswith(key):
                             self.tags[tag] = tags[id3tag].text
-    
+
+    def _extract_albumart(self, ext, tags):
+        tag = self.__tag_mapping[ext].get('albumart')
+        if tag is None:
+            return
+        if tag in tags:
+            self.coverart['ext'] = ext
+            if ext == '.mp3':
+                apic = tags[tag]
+                self.coverart['mime'] = apic.mime
+                self.coverart['data'] = apic.data
+            elif ext == '.m4a':
+                self.coverart['data'] = tags[tag][0]
+            elif ext in ('.ogg', '.flac'):
+                encoded_image = tags[tag][0]
+                image = mutagen.flac.Picture(base64.b64decode(encoded_image))
+                self.coverart['data'] = image.data
+                self.coverart['mime'] = image.mime
+        elif ext == '.mp3':
+            for key in tags:
+                if key.startswith(tag):
+                    apic = tags[key]
+                    self.coverart['mime'] = apic.mime
+                    self.coverart['data'] = apic.data
+
     def insert(self, output_file):
         """
         inserts tags tags into an audio file.
@@ -123,67 +145,9 @@ class MetaTag(object):
                 else:
                     tags[self.__tag_mapping[ext][tag]] = [u'%s' % value]
         tags.save()
+        self._insert_albumart(ext, output_file)
 
-
-class CoverTag(object):
-    """
-    Handles insertion or extraction of album cover art
-    """
-
-    __tag_mapping = {
-                        '.mp3'  : 'APIC:',
-                        '.m4a'  : 'covr',
-                        '.wma'  : None,
-                        '.ogg'  : 'metadata_block_picture',
-                        '.flac' : 'metadata_block_picture',
-                        '.mpc'  : None,
-                    }
-
-    def __init__(self, filename):
-        self.coverart = {   
-                            'mime'  : 'image/jpeg', 
-                            'type'  : 3, 
-                            'ext'   : None, 
-                            'data'  : None,
-                        }
-        self.extract(filename)
-
-    def extract(self, input_file):
-        ext = os.path.splitext(input_file)[1]
-        if ext not in self.__tag_mapping:
-            return
-        tag = self.__tag_mapping[ext]
-        if tag is None:
-            return
-        
-        tags = mutagen.File(input_file)
-        if tag in tags:
-            self.coverart['ext'] = ext
-            if ext == '.mp3':
-                apic = tags[tag]
-                self.coverart['mime'] = apic.mime
-                self.coverart['data'] = apic.data
-            elif ext == '.m4a':
-                self.coverart['data'] = tags[tag][0]
-            elif ext in ('.ogg', '.flac'):
-                encoded_image = tags[tag][0]
-                image = mutagen.flac.Picture(base64.b64decode(encoded_image))
-                self.coverart['data'] = image.data
-                self.coverart['mime'] = image.mime
-        elif ext == '.mp3':
-            for key in tags:
-                if key.startswith(tag):
-                    apic = tags[key]
-                    self.coverart['mime'] = apic.mime
-                    self.coverart['data'] = apic.data
-
-    def insert(self, output_file):
-        ext = os.path.splitext(output_file)[1]
-        if ext not in self.__tag_mapping:
-            return
-        tag = self.__tag_mapping[ext]
-        if tag is None:
-            return
+    def _insert_albumart(self, ext, output_file):
         if self.coverart['data'] is None:
             return
 
@@ -194,7 +158,7 @@ class CoverTag(object):
                     mime = mutagen.mp4.MP4Cover.FORMAT_PNG
                 else:
                     mime = mutagen.mp4.MP4Cover.FORMAT_JPEG
-                
+
                 coverart = mutagen.mp4.MP4Cover(self.coverart['data'], mime)
                 tags['covr'] = [coverart]
                 tags.save()
@@ -204,12 +168,13 @@ class CoverTag(object):
             audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
             if self.coverart['ext'] in ('.m4a', '.ogg', '.flac'):
                 apic = mutagen.id3.APIC(
-                                            desc     = u'',
-                                            encoding = 3,
-                                            data     = self.coverart['data'],
-                                            type     = self.coverart['type'],
-                                            mime     = self.coverart['mime']
-                                       )
+                    desc     = u'',
+                    encoding = 3,
+                    data     = self.coverart['data'],
+                    type     = self.coverart['type'],
+                    mime     = self.coverart['mime']
+                )
                 audio.tags.add(apic)
                 audio.save()
                 return
+

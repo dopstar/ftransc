@@ -37,7 +37,7 @@ from ftransc.utils import (
                             xspf_extract,
                             rip_compact_disc,
                           )
-from ftransc.utils.metadata import MetaTag, CoverTag
+from ftransc.utils.metadata import MetaTag
 
 
 
@@ -153,6 +153,13 @@ if __name__ == "__main__":
         presets = ConfigParser.ConfigParser()
         presets.readfp(open(opt.presets))
         if qual not in presets.options(fmt):
+            if 'normal' not in presets.options(fmt):
+                print2("'%s%s%s' invalid quality preset. valid presets are: " %\
+                        (rd, qual, nc))
+                for prst in presets.options(fmt):
+                    print2(" %s%s%s" % (gr, prst, nc))
+                raise SystemExit(1)
+
             print2("%s%s%s invalid quality preset, using %s%s%s." % \
                     (rd, qual, nc, gr, 'normal', nc))
             qual = 'normal'
@@ -267,7 +274,6 @@ if __name__ == "__main__":
             try:
                 if not no_tags:
                     metadata = MetaTag(ifile)
-                    albumart = CoverTag(ifile)
             except IOError:
                 print2("%.1f%%| %s| %s%d/%d%s | %s%s%s | %sUnreadable%s\n"  %\
                        (progress, cpucount, bl, ifile, nc, rd, nc))
@@ -296,9 +302,7 @@ if __name__ == "__main__":
             try:
                 if not no_tags:
                     metadata.insert(ofile)
-                    albumart.insert(ofile)
                     del metadata
-                    del albumart
             except Exception, err:
                 if opt.debug:
                     print2("%.1f%%| %s| %s%s%s\n" % (progress, cpucount, rd, err.message, nc))
@@ -316,6 +320,8 @@ if __name__ == "__main__":
     num_procs = multiprocessing.cpu_count()
     if 0 < opt.num_procs < num_procs:
         num_procs = opt.num_procs
+    if len(files) < num_procs:
+        num_procs = len(files)
     for pcount in xrange(1, num_procs + 1):
         proc_name = '%sCPU%d%s' % (proc_colors[pcount % 2], pcount, nc)
         x = multiprocessing.Process(target=consume_queue, args=(q, proc_name))

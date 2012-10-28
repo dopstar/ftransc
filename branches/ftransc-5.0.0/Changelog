@@ -1,3 +1,9 @@
+ftransc 5.0.5 (28 Oct 2012):
+	+ Merged the CoverTag class into MetaTag class
+	+ Fixed bug when the default 'normal' preset is not in the presets file
+	+ Generating fewer consumer processes when there are fewer files than CPU
+	count
+
 ftransc 5.0.4 (19 Aug 2012):
 	+ added --list-formats option
 	+ added --processes/-p option

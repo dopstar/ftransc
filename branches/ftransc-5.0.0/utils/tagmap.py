@@ -11,6 +11,7 @@ tags = {
             'lyrics'      : 'USLT',
             'disk'        : 'TPOS',
             'comment'     : 'COMM',
+            'albumart'    : 'APIC:',
         },
         '.wma': {
             'artist'      : 'Author',
@@ -60,6 +61,7 @@ tags = {
             'albumartist' : 'aART',
             'disk'        : 'disk',
             'comment'     : '\xa9cmt',
+            'albumart'    : 'covr',
             },
         '.aac': {
             'artist'      : '\xa9ART',
@@ -82,6 +84,7 @@ tags = {
             'year'        : 'date',
             'tracknumber' : 'tracknumber',
             'composer'    : 'composer',
+            'albumart'    : 'metadata_block_picture',
             },
         '.flac': {
             'artist'      : 'artist',
@@ -91,6 +94,7 @@ tags = {
             'year'        : 'date',
             'tracknumber' : 'tracknumber',
             'composer'    : 'composer',
+            'albumart'    : 'metadata_block_picture',
             },
         '.mpc': {
             'artist'      : 'Artist',
@@ -102,4 +106,3 @@ tags = {
             'composer'    : 'Composer',
             },
         }
-
