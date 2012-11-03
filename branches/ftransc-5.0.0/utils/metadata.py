@@ -33,6 +33,7 @@ class MetaTag(object):
             'tracknumber'   : mutagen.id3.TRCK,
             'composer'      : mutagen.id3.TCOM,
             'lyrics'        : mutagen.id3.USLT,
+            'disk'          : mutagen.id3.TPOS,
         }
         __opener = {
             '.mp3'          : mutagen.mp3.Open,
@@ -58,6 +59,7 @@ class MetaTag(object):
                 'composer'      : None,
                 'lyrics'        : None,
                 'albumart'      : None,
+                'disk'          : None,
         }
         self.coverart = {
             'mime'  : 'image/jpeg',
@@ -76,7 +78,10 @@ class MetaTag(object):
             tags = mutagen.File(self.input_file)
             for tag, key in self.__tag_mapping[ext].iteritems():
                 if tag == 'albumart':
-                    self._extract_albumart(ext, tags)
+                    try:
+                        self._extract_albumart(ext, tags)
+                    except:
+                        continue
                 elif key in tags:
                     self.tags[tag] = tags[key][0]
                 elif tag == 'lyrics' and key == 'USLT':
@@ -119,8 +124,8 @@ class MetaTag(object):
         for tag, value in self.tags.items():
             if value is None or tag not in self.__tag_mapping[ext]:
                 continue
-            if tag == 'tracknumber' and \
-                (isinstance(value, list) or isinstance(value, tuple)) and\
+            if tag in ('tracknumber', 'disk') and \
+                (isinstance(value, list) or isinstance(value, tuple)) and \
                 len(value) == 2:
                 value = '%d/%d' % (value[0], value[1])
             if ext == '.mp3':

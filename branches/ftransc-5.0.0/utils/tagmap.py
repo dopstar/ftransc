@@ -48,6 +48,7 @@ tags = {
             'albumartist' : 'aART',
             'disk'        : 'disk',
             'comment'     : '\xa9cmt',
+            'albumart'    : 'covr',
             },
         '.mp4': {
             'artist'      : '\xa9ART',
@@ -104,5 +105,19 @@ tags = {
             'year'        : 'Year',
             'tracknumber' : 'Track',
             'composer'    : 'Composer',
+            },
+        '.3gp': {
+            'artist'      : '\xa9ART',
+            'album'       : '\xa9alb',
+            'title'       : '\xa9nam',
+            'genre'       : '\xa9gen',
+            'year'        : '\xa9day',
+            'tracknumber' : 'trkn',
+            'composer'    : '\xa9wrt',
+            'lyrics'      : '\xa9lyr',
+            'albumartist' : 'aART',
+            'disk'        : 'disk',
+            'comment'     : '\xa9cmt',
+            'albumart'    : 'covr',
             },
         }

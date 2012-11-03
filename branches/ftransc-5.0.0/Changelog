@@ -1,3 +1,8 @@
+ftransc 5.0.6 (03 Nov 2012):
+	+ Fixed bug when disk number is present in the metadata which caused all
+	metadata to be dropped
+	+ Added support for extraction of metadata from .3gp files
+
 ftransc 5.0.5 (28 Oct 2012):
 	+ Merged the CoverTag class into MetaTag class
 	+ Fixed bug when the default 'normal' preset is not in the presets file
