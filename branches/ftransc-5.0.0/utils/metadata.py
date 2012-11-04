@@ -164,22 +164,31 @@ class MetaTag(object):
                 else:
                     mime = mutagen.mp4.MP4Cover.FORMAT_JPEG
 
-                coverart = mutagen.mp4.MP4Cover(self.coverart['data'], mime)
-                tags['covr'] = [coverart]
+                image = mutagen.mp4.MP4Cover(self.coverart['data'], mime)
+                tags['covr'] = [image]
                 tags.save()
                 return
 
         elif ext == '.mp3':
             audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
             if self.coverart['ext'] in ('.m4a', '.ogg', '.flac'):
-                apic = mutagen.id3.APIC(
-                    desc     = u'',
-                    encoding = 3,
-                    data     = self.coverart['data'],
-                    type     = self.coverart['type'],
-                    mime     = self.coverart['mime']
-                )
-                audio.tags.add(apic)
+                image = mutagen.id3.APIC(desc     = u'',
+                                        encoding = 3,
+                                        data     = self.coverart['data'],
+                                        type     = self.coverart['type'],
+                                        mime     = self.coverart['mime'])
+                audio.tags.add(image)
                 audio.save()
                 return
+        
+        elif ext == '.flac':
+            tags = mutagen.File(output_file)
+            image = mutagen.flac.Picture()
+            image.desc = u''
+            image.data = self.coverart['data']
+            image.type = self.coverart['type']
+            image.mime = self.coverart['mime']
+            tags.add_picture(image)
+            tags.save()
+            return
 
