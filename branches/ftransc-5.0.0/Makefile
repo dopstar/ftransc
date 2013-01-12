@@ -6,7 +6,7 @@ install:
 	mkdir -m 755 /usr/share/doc/ftransc 2> /dev/null || :
 	install -m 644 Changelog README AUTHORS Makefile /usr/share/doc/ftransc
 	install -m 644 ftransc.1.gz /usr/share/man/man1
-	mkdir -m 775 ~/.gnome2/nautilus-scripts/ftransc 2> /dev/null || :
+	mkdir -p -m 775 ~/.gnome2/nautilus-scripts/ftransc 2> /dev/null || :
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ MP3
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ WMA
 	ln -s /usr/local/bin/ftransc ~/.gnome2/nautilus-scripts/ftransc/convert\ to\ AAC
