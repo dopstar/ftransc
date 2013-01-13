@@ -18,12 +18,13 @@ The dependencies for ftransc are:
   * [http://www.audiocoding.com faac] - for encoding to aac format (with .m4a extension).
   * [http://www.musepack.net mppenc] - for encoding to musepack format (.mpc extension).
   * [http://www.riverbankcomputing.co.uk/software/pyqt/intro PyQt4] - for the GUI front-end, ftransc_qt.
+  * [http://www.xiph.org/paranoia cdparanoia] - for ripping CD digita audio.
 
 == Installing ftransc == 
 
 Install dependencies, including subversion, on Terminal using apt-get as follows.
 {{{
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4
+    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4 cdparanoia
 }}}
 
 OPTION A. Obtain the latest released ftransc tarball version from [http://code.google.com/p/ftransc/downloads/list ftransc] website and unpack and install it as follows:
@@ -62,6 +63,7 @@ For further ftransc help:
 ftransc should be invoked/run on Terminal, typically in a syntax like 
 *ftransc options files*. ftransc will convert one file at a time and 
 followed by the next one, until all input files are converted.
+(EDIT: ftransc version 5.0.0 and up supports multiprocessing so ftransc first put all the files to be converted on one single pool (queue). Then processes up to the number of available CPU cores are generated. Each process take a file from the queue and convert it. When it finishes it takes another file from the queue or terminates if the queue is empty.)
 
 Conversion steps:
 
@@ -123,6 +125,6 @@ The following is the list of supported tags across audio formats that ftransc ca
 || composer    || Y || Y || Y || Y || Y || Y || N ||
 || publisher   || N || Y || N || N || Y || N || N ||
 || lyrics || Y || Y || N || N || Y || N || N ||
-|| album art   || Y || Y || N || N || N || N || N ||
+|| album art   || Y || Y || N || Y || N || N || N ||
 || album artist || N || N || N || N || N || N || N ||
 || comment     || N || N || N || N || N || N || N ||
