@@ -1,3 +1,6 @@
+ftransc 5.0.8 (13 Jan 2013):
+	+ using FFmpeg to encode any supported format where possible
+	
 ftransc 5.0.7 (04 Nov 2012):
 	+ Added cover art insertion support to flac files
 

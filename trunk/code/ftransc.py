@@ -18,15 +18,7 @@ from ftransc.utils.constants import (
                                         SILENT,
                                         NO_TAGS,
                                     )
-from ftransc.utils.convert import (
-                                    convert_to_wav,
-                                    convert_to_wma,
-                                    convert_to_mpc,
-                                    convert_to_mp3,
-                                    convert_to_m4a,
-                                    convert_to_ogg,
-                                    convert_to_flac,
-                                  )
+from ftransc.utils.convert import convert
 
 from ftransc.utils import (
                             upgrade_version,
@@ -43,15 +35,6 @@ from ftransc.utils.metadata import MetaTag
 
 
 quality_presets = {}
-converters = {
-        "mp3"   : convert_to_mp3, 
-        "ogg"   : convert_to_ogg, 
-        "m4a"   : convert_to_m4a, 
-        "wma"   : convert_to_wma, 
-        "wav"   : convert_to_wav, 
-        "flac"  : convert_to_flac,
-        "mpc"   : convert_to_mpc,
-        }
 
 if __name__ == "__main__":
     #______________________ colors __________________________
@@ -282,14 +265,11 @@ if __name__ == "__main__":
                 input_q.task_done()
                 continue
                 #___________ audio convert ______________
-            ifilename, in_ext = os.path.splitext(ifile)
-            if converters[fmt](ifilename, in_ext, logfile, outdir, preset=preset):
+            if convert(ifile, fmt, outdir, preset, logfile):
                 print2("%.1f%%| %s| to %s | %s%s%s | %sSuccess%s\n" %\
                        (progress, cpucount, fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
                 if opt.remove:
                     dummy = os.remove(ifile)
-                if fmt.lower() == "flac":
-                    dummy = os.remove(ifilename + '.wav')
                 dummy = os.remove(swp_file)
             else:
                 print2("%.1f%%| %s| to %s | %s%s%s | %sFail%s\n" %\
@@ -322,6 +302,7 @@ if __name__ == "__main__":
         num_procs = opt.num_procs
     if len(files) < num_procs:
         num_procs = len(files)
+    time.sleep(1) # wait a sec before start processing. queue might not be full yet
     for pcount in xrange(1, num_procs + 1):
         proc_name = '%sCPU%d%s' % (proc_colors[pcount % 2], pcount, nc)
         x = multiprocessing.Process(target=consume_queue, args=(q, proc_name))

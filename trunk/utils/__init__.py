@@ -1,5 +1,6 @@
 import os
 import urllib
+import tempfile
 import subprocess
 
 from ftransc.utils.constants import SUPPORTED_FORMATS
@@ -76,7 +77,7 @@ def upgrade_version(current_version):
     """
     
     trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
-    tmp_dir = '/tmp/tmp-ftransc_upgrade-tmp'
+    tmp_dir = tempfile.mktemp(prefix='ftransc_')
     ftransc_doc_dir = '/usr/share/doc/ftransc'
     if os.environ['USER'] != 'root':
         raise SystemExit('try using "sudo", you have to be "root" on this one.')
@@ -109,7 +110,7 @@ def upgrade_version(current_version):
             subprocess.Popen(cmd, 
                              stdout=subprocess.PIPE, 
                              stderr=devnull).communicate()
-            raise SystemExit('upgraded from version [%s] to version [%s]' % \
+            raise SystemExit('upgraded from version [\033[0;31m%s\033[0m] to version [\033[0;32m%s\033[0m]' % \
                      (current_version, latest_version))
     raise SystemExit('You are already on the latest version.')
 
