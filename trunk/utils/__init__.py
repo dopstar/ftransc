@@ -3,9 +3,9 @@ import urllib
 import tempfile
 import subprocess
 
-from ftransc.utils.constants import SUPPORTED_FORMATS
+from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES
 
-def show_dep_status(dep_name, dep_status, deps, SUPPORTED_FORMATS, check=False):
+def show_dep_status(dep_name, dep_status, deps, fmts, check=False):
     rd = "\033[0;31m"   #red
     gr = "\033[0;32m"   #green
     nc = "\033[0m"      #no color
@@ -17,39 +17,23 @@ def show_dep_status(dep_name, dep_status, deps, SUPPORTED_FORMATS, check=False):
             print2("%s_______ %s not installed _______%s" % (rd, dep_name, nc))
         if deps:
             for fmt in deps[dep_name]:
-                SUPPORTED_FORMATS.remove(fmt)
+                fmts.remove(fmt)
                 
-            return SUPPORTED_FORMATS
+            return fmts
 
 def check_deps(check=False, list_formats=False):
     """
     checks whether all dependencies for this script are installed or not.
     """
-    deps = {
-            'cdparanoia'        : [],
-            'ffmpeg'            : [
-                                    'mp3', 
-                                    'ogg', 
-                                    'wma', 
-                                    'm4a', 
-                                    'flac', 
-                                    'wav', 
-                                    'mpc',
-                                  ],
-            'lame'              : ['mp3'],
-            'flac'              : ['flac'],
-            'faac'              : ['m4a'],
-            'oggenc'            : ['ogg'],
-            'mppenc'            : ['mpc'],
-            }
+
     module_map = {
                     'python-mutagen': 'mutagen',
                     'python-qt4'    : 'PyQt4',
                  }
-    for dep in deps:
+    for dep in DEPENDENCIES:
         status = subprocess.Popen(["which", dep], 
                                    stdout=subprocess.PIPE).communicate()[0].strip() 
-        show_dep_status(dep, status, deps, SUPPORTED_FORMATS, check=check)
+        show_dep_status(dep, status, DEPENDENCIES, SUPPORTED_FORMATS, check=check)
 
     for pkg, mod in module_map.iteritems():
         try:

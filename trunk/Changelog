@@ -1,3 +1,6 @@
+ftransc 5.0.9 (02 Feb 2013):
+    + added WavPack support
+
 ftransc 5.0.8 (13 Jan 2013):
 	+ using FFmpeg to encode any supported format where possible
 	

@@ -8,6 +8,7 @@ try:
     import mutagen.mp4
     import mutagen.asf
     import mutagen.flac
+    import mutagen.apev2
     import mutagen.musepack
     import mutagen.oggvorbis
     NO_TAGS = False
@@ -37,11 +38,12 @@ class MetaTag(object):
         }
         __opener = {
             '.mp3'          : mutagen.mp3.Open,
-            '.wma'          : mutagen.asf.Open, 
-            '.m4a'          : mutagen.mp4.Open, 
+            '.wma'          : mutagen.asf.Open,
+            '.m4a'          : mutagen.mp4.Open,
             '.flac'         : mutagen.flac.Open,
+            '.wv'           : mutagen.apev2.APEv2,
             '.mpc'          : mutagen.musepack.Open,
-            '.ogg'          : mutagen.oggvorbis.Open, 
+            '.ogg'          : mutagen.oggvorbis.Open,
         }
     else:
         __id3_mapping = {}
@@ -120,7 +122,11 @@ class MetaTag(object):
         ext = os.path.splitext(output_file)[1].lower()
         if ext not in self.__opener:
             return 1
-        tags = self.__opener[ext](output_file)
+        try:
+            tags = self.__opener[ext](output_file)
+        except mutagen.apev2.APENoHeaderError:
+            tags = self.__opener[ext]()
+
         for tag, value in self.tags.items():
             if value is None or tag not in self.__tag_mapping[ext]:
                 continue
@@ -149,7 +155,12 @@ class MetaTag(object):
                         tags[self.__tag_mapping[ext][tag]] = [(trkn[0], 0)]
                 else:
                     tags[self.__tag_mapping[ext][tag]] = [u'%s' % value]
-        tags.save()
+        
+        if ext == '.wv':
+            tags.save(output_file)
+        else:
+            tags.save()
+
         self._insert_albumart(ext, output_file)
 
     def _insert_albumart(self, ext, output_file):

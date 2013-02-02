@@ -1,6 +1,10 @@
 import os
 from subprocess import Popen, PIPE
-from ftransc.utils.constants import EXTERNAL_FORMATS, EXTERNAL_ENCODERS
+from ftransc.utils.constants import (
+        EXTERNAL_FORMATS, 
+        EXTERNAL_ENCODERS, 
+        EXTERNAL_ENCODER_OUTPUT_OPT,
+        )
 
 def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfile=None):
     if outputfolder in (None, ''):
@@ -18,8 +22,13 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
     cmdline += [infilename]
 
     if utility not in (None, ''):
+        output_opt = EXTERNAL_ENCODER_OUTPUT_OPT.get(utility, '')
         cmdline += "-f wav /dev/stdout".split()
-        cmdline2 = [utility] + audiopresets.split() + ["-", outfilename]
+        if output_opt:
+            cmdline2 = [utility] + audiopresets.split() + ["-", output_opt, outfilename]
+        else:
+            cmdline2 = [utility] + audiopresets.split() + ["-", outfilename]
+
         pipeline1 = Popen(cmdline, stdout=PIPE, stderr=logfile)
         pipeline = Popen(cmdline2, stdin=pipeline1.stdout,stdout=PIPE, stderr=logfile)
     else:

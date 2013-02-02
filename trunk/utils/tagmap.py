@@ -120,4 +120,12 @@ tags = {
             'comment'     : '\xa9cmt',
             'albumart'    : 'covr',
             },
+        '.wv': {
+            'artist'      : 'artist',
+            'album'       : 'album',
+            'title'       : 'title',
+            'genre'       : 'genre',
+            'year'        : 'year',
+            'tracknumber' : 'track',
+            }
         }

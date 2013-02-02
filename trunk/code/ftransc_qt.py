@@ -2,10 +2,9 @@
 
 import os
 import sys
-from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui
 
-from ftransc.utils import m3u_extract
+from ftransc.utils import m3u_extract, check_deps
 
 from ftransc.utils.constants import VERSION
 
@@ -38,44 +37,11 @@ class Window(QtGui.QDialog):
 
         codec_label = QtGui.QLabel("Convert To:")
         self.codec_combobox = QtGui.QComboBox()
-        avconv  = Popen(['which', 'avconv'], 
-                        stdout=PIPE, 
-                        stderr=PIPE).communicate()[0]
+        formats = list(check_deps())
+        formats.sort()
+        for fmt in formats:
+            self.codec_combobox.addItem(fmt)
 
-        faac    = Popen(['which', 'faac'], 
-                        stdout=PIPE, 
-                        stderr=PIPE).communicate()[0]
-
-        vorbis  = Popen(['which', 'oggenc'], 
-                        stdout=PIPE, 
-                        stderr=PIPE).communicate()[0]
-
-        lame    = Popen(['which', 'lame'], 
-                        stdout=PIPE, 
-                        stderr=PIPE).communicate()[0]
-
-        musepack = Popen(['which', 'mppenc'], 
-                         stdout=PIPE, 
-                         stderr=PIPE).communicate()[0]
-
-        flac    = Popen(['which', 'flac'], 
-                         stdout=PIPE, 
-                         stderr=PIPE).communicate()[0]
-
-        if avconv and faac:
-            self.codec_combobox.addItem("aac")
-        if avconv and flac:
-            self.codec_combobox.addItem("flac")
-        if avconv and musepack:
-            self.codec_combobox.addItem("mpc")
-        if avconv and lame:
-            self.codec_combobox.addItem("mp3")
-        if avconv and vorbis:
-            self.codec_combobox.addItem("ogg")
-        if avconv:
-            self.codec_combobox.addItem("wav")
-            self.codec_combobox.addItem("wma")
-        
         quality_label = QtGui.QLabel("Quality:")
         self.quality_combobox = QtGui.QComboBox()
         presets = ['Insane', 'Extreme', 'High', 'Normal', 'Low', 'Tiny']
