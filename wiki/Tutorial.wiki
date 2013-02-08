@@ -19,12 +19,13 @@ The dependencies for ftransc are:
   * [http://www.musepack.net mppenc] - for encoding to musepack format (.mpc extension).
   * [http://www.riverbankcomputing.co.uk/software/pyqt/intro PyQt4] - for the GUI front-end, ftransc_qt.
   * [http://www.xiph.org/paranoia cdparanoia] - for ripping CD digita audio.
+  * [http://www.wavpack.com wavpack] - for encoding to WavPack format (.wv extension)
 
 == Installing ftransc == 
 
 Install dependencies, including subversion, on Terminal using apt-get as follows.
 {{{
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4 cdparanoia
+    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4 cdparanoia wavpack
 }}}
 
 OPTION A. Obtain the latest released ftransc tarball version from [http://code.google.com/p/ftransc/downloads/list ftransc] website and unpack and install it as follows:
@@ -115,16 +116,16 @@ The contents of the presets.conf file can be viewed [http://code.google.com/p/ft
 
 The following is the list of supported tags across audio formats that ftransc can encode to. N means the tag is not supported and hence is lost during conversion. Y means the tag is supported and is present on the new file after conversion:
 
-|| *tag* || *m4a* || *mp3* || *ogg* || *flac* || *wma* || *mpc* || *wav* ||
-|| title  || Y || Y || Y || Y || Y || Y || N ||
-|| artist || Y || Y || Y || Y || Y || Y || N ||
-|| album  || Y || Y || Y || Y || Y || Y || N ||
-|| genre  || Y || Y || Y || Y || Y || Y || N ||
-|| date   || Y || Y || Y || Y || Y || Y || N ||
-|| tracknumber || Y || Y || Y || Y || Y || Y || N ||
-|| composer    || Y || Y || Y || Y || Y || Y || N ||
-|| publisher   || N || Y || N || N || Y || N || N ||
-|| lyrics || Y || Y || N || N || Y || N || N ||
-|| album art   || Y || Y || N || Y || N || N || N ||
-|| album artist || N || N || N || N || N || N || N ||
-|| comment     || N || N || N || N || N || N || N ||
+|| *tag* || *m4a* || *mp3* || *ogg* || *flac* || *wma* || *mpc* || *wav* || *wv* ||
+|| title  || Y || Y || Y || Y || Y || Y || N || Y ||
+|| artist || Y || Y || Y || Y || Y || Y || N || Y ||
+|| album  || Y || Y || Y || Y || Y || Y || N || Y ||
+|| genre  || Y || Y || Y || Y || Y || Y || N || Y ||
+|| date   || Y || Y || Y || Y || Y || Y || N || Y ||
+|| tracknumber || Y || Y || Y || Y || Y || Y || N || Y ||
+|| composer    || Y || Y || Y || Y || Y || Y || N || N ||
+|| publisher   || N || Y || N || N || Y || N || N || N ||
+|| lyrics || Y || Y || N || N || Y || N || N || N ||
+|| album art   || Y || Y || N || Y || N || N || N || N ||
+|| album artist || N || N || N || N || N || N || N || N ||
+|| comment     || N || N || N || N || N || N || N || N ||
