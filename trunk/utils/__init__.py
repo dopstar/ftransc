@@ -1,9 +1,11 @@
 import os
 import urllib
 import tempfile
+import optparse
 import subprocess
+import ConfigParser
 
-from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES
+from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES, VERSION, LOGFILE
 
 def show_dep_status(dep_name, dep_status, deps, fmts, check=False):
     rd = "\033[0;31m"   #red
@@ -145,3 +147,74 @@ def rip_compact_disc():
     parent_folder, child_folders, child_files = walker.next()
     return child_files
 
+
+def parse_args():
+    parser = optparse.OptionParser(usage="%prog [options] [files]",
+                                   version=VERSION)
+    parser.add_option('-f', '--format', type=str, default='mp3',
+                      help='audio format to convert to')
+    parser.add_option('-q', '--quality', type=str, default='normal',
+                      help='audio quality preset')
+    parser.add_option('-c', '--check', dest='check', action='store_true',
+                      help='check dependencies')
+    parser.add_option('-r', '--remove', dest='remove', action='store_true',
+                      help='remove original file after converting successfully')
+    parser.add_option('-d', '--decode', dest='decode', action='store_true',
+                      help='decode file .wav format')
+    parser.add_option('-w', '--over', dest='overwrite', action='store_true',
+                      help='overwrite destination file if it exists already')
+    parser.add_option('-u', '--unlock', dest='unlock', action='store_true',
+                      help='unlock a locked file and convert')
+    parser.add_option('-n', '--no-tags', dest='no_tags', action='store_true',
+                      default=False, help='Disable metadata support')
+    parser.add_option('--directory', dest="walk", type=str,
+                      help='convert all files inside the given directory')
+    parser.add_option('--upgrade', action='store_true', default=False,
+                      help='upgrade to the latest available version')
+    parser.add_option('-s', '--silent', action='store_true', default=False,
+                      help='Be silent, nothing is printed out')
+    parser.add_option('-l', '--log', dest='logfile', default=LOGFILE,
+                      help='Write log message to the specified file')
+    parser.add_option('--debug', action='store_true', default=False,
+                      help='Debug mode. Print everything to the screen.')
+    parser.add_option('--notify', action='store_true', default=False,
+                      help='Show encoding summary notification')
+    parser.add_option('--presets', default='/etc/ftransc/presets.conf',
+                      help='Use presets from the specified presets configuration file')
+    parser.add_option('--m3u', help='Convert files in the m3u playlist file')
+    parser.add_option('--pls', help='Convert files in the pls playlist file')
+    parser.add_option('--xspf', help='Convert files in the xspf playlist file')
+    parser.add_option('-o', '--outdir',
+                      help='Put converted file into specified folder')
+    parser.add_option('--cd', '--cdrip', dest='cdrip', action='store_true',
+                      default=False, help='rip Compact Disc (CD) digital audio')
+    parser.add_option('--list-formats', dest='list_formats', action='store_true', default=False,
+                      help='Show available audio formats to convert to')
+    parser.add_option('-p', '--processes', dest='num_procs', default=0, type=int,
+                      help='Use the specified number of parallel processes. CPU count is the maximum.')
+    parser.add_option('-x', '--ext-encoder', action='store_true', dest='external_encoder',
+                      help='Use external encoder (if available)')
+
+    return parser.parse_args()
+
+
+def get_profile(fmt, qual, config_file, is_ext_encoder):
+    profiles = ConfigParser.ConfigParser()
+    profiles.readfp(open(config_file))
+
+    int_profile_exists = True
+    profile_name = "%s_int" % fmt
+
+    if profile_name not in profiles.sections():
+        profile_name = "%s_ext" % fmt
+        int_profile_exists = False
+
+    if is_ext_encoder and '%s_ext' % fmt in profiles.sections():
+        profile_name = "%s_ext" % fmt
+    elif int_profile_exists:
+        profile_name = "%s_int" % fmt
+
+    if qual not in profiles.options(profile_name):
+        raise SystemExit("'%s' is an invalid quality preset." % (str(qual)))
+
+    return profiles.get(profile_name, qual)

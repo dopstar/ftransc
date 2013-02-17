@@ -6,7 +6,8 @@ from ftransc.utils.constants import (
         EXTERNAL_ENCODER_OUTPUT_OPT,
         )
 
-def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfile=None):
+
+def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfile=None, external_enc=False):
     if outputfolder in (None, ''):
         outputfolder = "./"
     if logfile is None:
@@ -21,7 +22,7 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
     cmdline = [encoder, '-y', '-i']
     cmdline += [infilename]
 
-    if utility not in (None, ''):
+    if utility not in (None, '') and (external_enc or audioformat in EXTERNAL_FORMATS):
         output_opt = EXTERNAL_ENCODER_OUTPUT_OPT.get(utility, '')
         cmdline += "-f wav /dev/stdout".split()
         if output_opt:
@@ -40,9 +41,10 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
     pipeline.communicate()
     return pipeline.returncode == 0
 
+
 def _get_external_encoder(audioformat):
-    if audioformat in EXTERNAL_FORMATS:
-        return EXTERNAL_ENCODERS.get(audioformat)
+    return EXTERNAL_ENCODERS.get(audioformat)
+
 
 def _determine_ffmpeg_utility():
     for util in ["avconv", "ffmpeg"]:

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 NO_TAGS             = False
 SILENT              = False  
-VERSION             = '5.0.9'
+VERSION             = '5.1.0'
 LOGFILE             = '/dev/null'
 SUPPORTED_FORMATS   = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc', 'wv'])
 EXTERNAL_FORMATS    = set(["mpc", "wv"])

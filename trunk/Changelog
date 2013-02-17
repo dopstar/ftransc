@@ -1,3 +1,8 @@
+ftransc 5.1.0 (17 Feb 2013):
+	+ added the -x option to be able to use external encoder if it is
+	available (eg using FFmpeg to decode and pipe to lame to encode instead of
+	using ffmpeg to decode and encode via libmp3lame)
+
 ftransc 5.0.9 (02 Feb 2013):
     + added WavPack support
 

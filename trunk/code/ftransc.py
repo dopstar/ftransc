@@ -6,29 +6,27 @@ ftransc is a script that bundles up utilities for audio conversion.
 import os
 import sys
 import time
-import optparse
-import subprocess
-import ConfigParser
 import multiprocessing
 
 
 from ftransc.utils.constants import (
-                                        VERSION,
-                                        LOGFILE,
-                                        SILENT,
-                                        NO_TAGS,
-                                    )
+    VERSION,
+    LOGFILE,
+    NO_TAGS,
+)
 from ftransc.utils.convert import convert
 
 from ftransc.utils import (
-                            upgrade_version,
-                            check_deps,
-                            print2,
-                            m3u_extract,
-                            pls_extract,
-                            xspf_extract,
-                            rip_compact_disc,
-                          )
+    upgrade_version,
+    check_deps,
+    print2,
+    m3u_extract,
+    pls_extract,
+    xspf_extract,
+    rip_compact_disc,
+    parse_args,
+    get_profile
+)
 from ftransc.utils.metadata import MetaTag
 
 
@@ -46,52 +44,8 @@ if __name__ == "__main__":
     cy = "\033[1;36m"
     nc = "\033[0m"
 
-    #______________________ options _________________________
-    parser = optparse.OptionParser(usage="%prog [options] [files]", 
-                                   version=VERSION)
-    parser.add_option('-f', '--format', type=str, default='mp3', 
-            help='audio format to convert to')
-    parser.add_option('-q', '--quality', type=str, default='normal', 
-            help='audio quality preset')
-    parser.add_option('-c', '--check', dest='check', action='store_true', 
-            help='check dependencies')
-    parser.add_option('-r', '--remove', dest='remove', action='store_true', 
-            help='remove original file after converting successfully')
-    parser.add_option('-d', '--decode', dest='decode', action='store_true', 
-            help='decode file .wav format')
-    parser.add_option('-w', '--over', dest='overwrite', action='store_true', 
-            help='overwrite destination file if it exists already')
-    parser.add_option('-u', '--unlock', dest='unlock', action='store_true', 
-            help='unlock a locked file and convert')
-    parser.add_option('-n', '--no-tags', dest='no_tags', action='store_true', 
-            default=False, help='Disable metadata support')
-    parser.add_option('--directory', dest="walk", type=str, 
-            help='convert all files inside the given directory')
-    parser.add_option('--upgrade', action='store_true', default=False,
-            help='upgrade to the latest available version')
-    parser.add_option('-s', '--silent', action='store_true', default=False,
-            help='Be silent, nothing is printed out')
-    parser.add_option('-l', '--log', dest='logfile', default=LOGFILE,
-            help='Write log message to the specified file')
-    parser.add_option('--debug', action='store_true', default=False,
-            help='Debug mode. Print everything to the screen.')
-    parser.add_option('--notify', action='store_true', default=False,
-            help='Show encoding summary notification')
-    parser.add_option('--presets', default='/etc/ftransc/presets.conf',
-            help='Use presets from the specified presets configuration file')
-    parser.add_option('--m3u', help='Convert files in the m3u playlist file')
-    parser.add_option('--pls', help='Convert files in the pls playlist file')
-    parser.add_option('--xspf', help='Convert files in the xspf playlist file')
-    parser.add_option('-o', '--outdir', 
-            help='Put converted file into specified folder')
-    parser.add_option('--cd', '--cdrip', dest='cdrip', action='store_true',
-                      default=False, help='rip Compact Disc (CD) digital audio')
-    parser.add_option('--list-formats', dest='list_formats', action='store_true', default=False,
-            help='Show available audio formats to convert to')
-    parser.add_option('-p', '--processes', dest='num_procs', default=0, type=int, 
-            help='Use the specified number of parallel processes. CPU count is the maximum.')
-    opt, files = parser.parse_args()
-    
+    opt, files = parse_args()
+
     if opt.upgrade:
         upgrade_version(VERSION)
 
@@ -116,7 +70,7 @@ if __name__ == "__main__":
     
     SILENT = opt.silent
 
-    files = list(set(files)) #remove duplicates
+    files = list(set(files))  # remove duplicates
     files.sort()
     home = os.getcwd()
     fmt = opt.format.lower()
@@ -133,20 +87,7 @@ if __name__ == "__main__":
     if not os.path.isfile(opt.presets):
         raise SystemExit('The presets file [%s] does not exist' % opt.presets)
     elif fmt != 'wav':
-        presets = ConfigParser.ConfigParser()
-        presets.readfp(open(opt.presets))
-        if qual not in presets.options(fmt):
-            if 'normal' not in presets.options(fmt):
-                print2("'%s%s%s' invalid quality preset. valid presets are: " %\
-                        (rd, qual, nc))
-                for prst in presets.options(fmt):
-                    print2(" %s%s%s" % (gr, prst, nc))
-                raise SystemExit(1)
-
-            print2("%s%s%s invalid quality preset, using %s%s%s." % \
-                    (rd, qual, nc, gr, 'normal', nc))
-            qual = 'normal'
-        preset = presets.get(fmt, qual)
+        preset = get_profile(fmt, qual, opt.presets, opt.external_encoder)
     else:
         preset = None
 
@@ -258,23 +199,23 @@ if __name__ == "__main__":
                 if not no_tags:
                     metadata = MetaTag(ifile)
             except IOError:
-                print2("%.1f%%| %s| %s%d/%d%s | %s%s%s | %sUnreadable%s\n"  %\
+                print2("%.1f%%| %s| %s%d/%d%s | %s%s%s | %sUnreadable%s\n" %
                        (progress, cpucount, bl, ifile, nc, rd, nc))
-                dummy = os.remove(swp_file)
+                os.remove(swp_file)
                 fails += 1
                 input_q.task_done()
                 continue
                 #___________ audio convert ______________
-            if convert(ifile, fmt, outdir, preset, logfile):
+            if convert(ifile, fmt, outdir, preset, logfile, opt.external_encoder):
                 print2("%.1f%%| %s| to %s | %s%s%s | %sSuccess%s\n" %\
                        (progress, cpucount, fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
                 if opt.remove:
-                    dummy = os.remove(ifile)
-                dummy = os.remove(swp_file)
+                    os.remove(ifile)
+                os.remove(swp_file)
             else:
                 print2("%.1f%%| %s| to %s | %s%s%s | %sFail%s\n" %\
                        (progress, cpucount, fmt.upper(), bl, ifile, nc, rd, nc), noreturn=True)
-                dummy = os.remove(swp_file)
+                os.remove(swp_file)
                 fails += 1
                 input_q.task_done()
                 continue

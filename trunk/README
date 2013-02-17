@@ -15,6 +15,7 @@ SUPPORTED AUDIO FORMATS:
 	M4A: 'Decode from' + 'Encode to' supported.
 	FLAC: 'Decode from' + 'Encode to' supported.
 	MPC: 'Decode from' + 'Encode to' supported.
+    WV: 'Decode from' + 'Encode to' supported.
 	
 FEATURES:
 ---------
@@ -30,6 +31,9 @@ FEATURES:
           6.4 OGG to M4A
           6.5 FLAC to MP3
           6.6 FLAC to M4A
+          6.7 M4A to FLAC
+          6.8 MP3 to FLAC
+          6.9 OGG to FLAC
     7. Convert files from .m3u, .pls and .xspf playlist files
     8. Place converted files into another folder
     9. Lyrics are preserved when converting from:
@@ -55,12 +59,12 @@ REQUIREMENTS:
  The following programs are REQUIRED and should be already installed in your 
 system: 
 	'lame', 'avconv', 'vorbis-tools', 'faac', 'flac', 'python-mutagen', 'mppenc',
-    'python-qt4'
+    'python-qt4', 'wavpack'
 	
 INSTALLATION:
 -------------
  1. Install dependencies by running on Terminal:
-	'sudo apt-get install lame libav-tools faac vorbis-tools python-mutagen flac mppenc python-qt4'
+	'sudo apt-get install lame libav-tools faac vorbis-tools python-mutagen flac mppenc python-qt4 wavpack'
 
  2. Installing ftransc for the first time:
     2.1 Installing from a .tar.gz source code:
