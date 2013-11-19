@@ -1,3 +1,7 @@
+ftransc 5.1.1 (19 Nov 2013):
+	+ fixed broken nautilus scripts
+	+ added convert to avi video (experimental)
+
 ftransc 5.1.0 (17 Feb 2013):
 	+ added the -x option to be able to use external encoder if it is
 	available (eg using FFmpeg to decode and pipe to lame to encode instead of

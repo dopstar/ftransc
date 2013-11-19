@@ -29,9 +29,6 @@ from ftransc.utils import (
 )
 from ftransc.utils.metadata import MetaTag
 
-
-
-
 quality_presets = {}
 
 if __name__ == "__main__":
