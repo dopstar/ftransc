@@ -1,10 +1,10 @@
 MAJOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f1`
 MINOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f2`
 install:
-	install -m 755 code/ftransc.py /usr/local/bin/ftransc
-	install -m 755 code/ftransc_qt.py /usr/local/bin/ftransc_qt
+	install -m 755 src/ftransc.py /usr/local/bin/ftransc
+	install -m 755 src/ftransc_qt.py /usr/local/bin/ftransc_qt
 	mkdir -p -m 755 /usr/share/doc/ftransc 2> /dev/null || :
-	install -m 644 Changelog README AUTHORS Makefile /usr/share/doc/ftransc
+	install -m 644 Changelog README.md AUTHORS Makefile /usr/share/doc/ftransc
 	install -m 644 ftransc.1.gz /usr/share/man/man1
 	mkdir -p -m 775 ~/.local/share/nautilus/scripts/ftransc 2> /dev/null || :
 	ln -s /usr/local/bin/ftransc ~/.local/share/nautilus/scripts/ftransc/convert\ to\ MP3
@@ -16,15 +16,15 @@ install:
 	ln -s /usr/local/bin/ftransc ~/.local/share/nautilus/scripts/ftransc/convert\ to\ MPC
 	chown ${SUDO_USER}:${SUDO_USER} ~/.local/share/nautilus/scripts/ftransc/
 	mkdir -m 755 /etc/ftransc 2> /dev/null || :
-	install -m 644 config/presets.conf /etc/ftransc
+	install -m 644 src/conf/presets.conf /etc/ftransc
 	mkdir -p -m 755 /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils 2> /dev/null || :
-	install -m 644 utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 utils/convert.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 utils/constants.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 utils/metadata.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 src/lib/utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 src/lib/utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 src/lib/utils/convert.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 src/lib/utils/constants.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
+	install -m 644 src/lib/utils/metadata.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
 	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
-	{ which rhythmbox && cp -r plugins/ftransc /usr/lib/rhythmbox/plugins; } || :
+	{ which rhythmbox && cp -r src/lib/plugins/ftransc /usr/lib/rhythmbox/plugins; } || :
 
 uninstall:
 	rm -f /usr/local/bin/ftransc
