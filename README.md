@@ -1,16 +1,9 @@
-ftransc
-=======
+# Installation Instructions and Usage Tutorial
 
-The Audio Conversion Script That Knows What You Want
-
-# summary ftransc Installation Instructions and Usage Tutorial
-
-# What is ftransc
+## What is ftransc
 
 ftransc is a script written in python for the Linux-based operating systems 
 for converting audio files across various formats.
-
-From version 4.1.0, there is a GUI front-end to ftransc which is called ftransc_qt. 
 
 ## ftransc Dependencies
 
@@ -21,23 +14,18 @@ The dependencies for ftransc include:
 ## Installing ftransc
 
 Install dependencies, including subversion, on Terminal using apt-get as follows.
-`
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4 cdparanoia wavpack
-`
+`sudo apt-get install ffmpeg lame flac faac vorbis-tools`
+`sudo apt-get install python-mutagen mppenc subversion`
+`sudo apt-get install python-qt4 cdparanoia wavpack`
 
-`
-    cd /tmp
-    svn export http://ftransc.googlecode.com/svn/trunk ftransc_tmp_dir
-    cd ftransc_tmp_dir
-    sudo make uninstall
-    sudo make install
-`
+Installing ftransc from Github:
+`git clone https://github.com/dopstar/ftransc.git`
+`cd ftransc`
+`sudo make uninstall`
+`sudo make install`
 
 ## Upgrading ftransc
-`
-    sudo ftransc --upgrade
-`
-
+`sudo ftransc --upgrade`
 
 Now you should be able to run ftransc from terminal. You use ftransc to check if the dependencies it needs are installed or not as follows:
 `
