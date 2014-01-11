@@ -1,4 +1,4 @@
-# Installation Instructions and Usage Tutorial
+# Installation & Usage Tutorial
 
 ## What is ftransc
 
@@ -20,6 +20,7 @@ Install dependencies, including subversion, on Terminal using apt-get as follows
 
 Installing ftransc from Github:
 `git clone https://github.com/dopstar/ftransc.git`
+
 `cd ftransc`
 `sudo make uninstall`
 `sudo make install`
