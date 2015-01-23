@@ -1,11 +1,10 @@
-#summary ftransc Installation Instructions and Usage Tutorial
-
 = What is ftransc =
 
 ftransc is a script written in python for the Linux-based operating systems 
 for converting audio files across various formats.
 
 There is a GUI front-end to ftransc which is called `ftransc_qt`. 
+
 
 == ftransc Dependencies ==
 
@@ -20,6 +19,7 @@ The dependencies for ftransc are:
   * [http://www.riverbankcomputing.co.uk/software/pyqt/intro PyQt4] - for the GUI front-end, ftransc_qt.
   * [http://www.xiph.org/paranoia cdparanoia] - for ripping CD digita audio.
   * [http://www.wavpack.com wavpack] - for encoding to WavPack format (.wv extension)
+
 
 == Installing ftransc == 
 
@@ -52,6 +52,7 @@ For further ftransc help:
     ftransc --help
 ```
 
+
 == How ftransc Works == 
 
 ftransc should be invoked/run on Terminal, typically in a syntax like 
@@ -67,6 +68,7 @@ Conversion steps:
  # A lockfile corresponding to the input file is deleted.
  # If an option to remove the original file is specified and if the conversion process has finished successfully, the original file is deleted.
  # Note: If step any of steps 2 to 4 has caused ftransc to terminate before reaching step 5, a lockfile will still exist. Further attempts to encode a file with a lockfile existing will cause that file to be skipped. To remove the lockfile use the '-u' option.
+
 
 == ftransc Examples ==
 
@@ -102,20 +104,22 @@ ftransc uses quality presets called 'insane', 'extreme', 'high', 'normal', 'low'
 
 The `/etc/ftransc/presets.conf` presets file can be overriden by use of the --presets option and specify the custom presets file to use or, if you know what you are doing, make changes directly on the it.
 
+
 == ftransc Metadata Tags == 
 
 The following is the list of supported tags across audio formats that ftransc can encode to. N means the tag is not supported and hence is lost during conversion. Y means the tag is supported and is present on the new file after conversion:
 
-|| *tag* || *m4a* || *mp3* || *ogg* || *flac* || *wma* || *mpc* || *wav* || *wv* ||
-|| title  || Y || Y || Y || Y || Y || Y || N || Y ||
-|| artist || Y || Y || Y || Y || Y || Y || N || Y ||
-|| album  || Y || Y || Y || Y || Y || Y || N || Y ||
-|| genre  || Y || Y || Y || Y || Y || Y || N || Y ||
-|| date   || Y || Y || Y || Y || Y || Y || N || Y ||
-|| tracknumber || Y || Y || Y || Y || Y || Y || N || Y ||
-|| composer    || Y || Y || Y || Y || Y || Y || N || N ||
-|| publisher   || N || Y || N || N || Y || N || N || N ||
-|| lyrics || Y || Y || N || N || Y || N || N || N ||
-|| album art   || Y || Y || N || Y || N || N || N || N ||
-|| album artist || N || N || N || N || N || N || N || N ||
-|| comment     || N || N || N || N || N || N || N || N ||
+| *tag* | *m4a* | *mp3* | *ogg* | *flac* | *wma* | *mpc* | *wav* | *wv* |
+|-------|-------|-------|-------|--------|-------|-------|-------|------|
+| title | Y	| Y 	| Y 	| Y 	 | Y	 | Y 	 | N 	 | Y 	|
+| artist | Y | Y | Y | Y | Y | Y | N | Y |
+| album  | Y | Y | Y | Y | Y | Y | N | Y |
+| genre  | Y | Y | Y | Y | Y | Y | N | Y |
+| date   | Y | Y | Y | Y | Y | Y | N | Y |
+| tracknumber | Y | Y | Y | Y | Y | Y | N | Y |
+| composer    | Y | Y | Y | Y | Y | Y | N | N |
+| publisher   | N | Y | N | N | Y | N | N | N |
+| lyrics | Y | Y | N | N | Y | N | N | N |
+| album art   | Y | Y | N | Y | N | N | N | N |
+| album artist | N | N | N | N | N | N | N | N |
+| comment     | N | N | N | N | N | N | N | N |
