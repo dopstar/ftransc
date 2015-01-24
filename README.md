@@ -9,16 +9,16 @@ There is a GUI front-end to ftransc which is called `ftransc_qt`.
 ## ftransc Dependencies 
 
 The dependencies for ftransc are:
-  * [http://code.google.com/p/mutagen](mutagen) - for metadata handling
-  * [http://www.ffmpeg.org](ffmpeg) - for decoding all input multimedia files and encoding to  wma format.
-  * [http://lame.sourceforge.net](lame) - for encoding to mp3 format.
-  * [http://flac.sourceforge.net](flac) - for encoding to flac format.
-  * [http://www.vorbis.com](vorbis-tools) - for encoding to ogg format.
-  * [http://www.audiocoding.com](faac) - for encoding to aac format (with .m4a extension).
-  * [http://www.musepack.net](mppenc) - for encoding to musepack format (.mpc extension).
-  * [http://www.riverbankcomputing.co.uk/software/pyqt/intro](PyQt4) - for the GUI front-end, ftransc_qt.
-  * [http://www.xiph.org/paranoia](cdparanoia) - for ripping CD digita audio.
-  * [http://www.wavpack.com](wavpack) - for encoding to WavPack format (.wv extension)
+  * (http://code.google.com/p/mutagen)[mutagen] - for metadata handling
+  * (http://www.ffmpeg.org)[ffmpeg] - for decoding all input multimedia files and encoding to  wma format.
+  * (http://lame.sourceforge.net)[lame] - for encoding to mp3 format.
+  * (http://flac.sourceforge.net)[flac] - for encoding to flac format.
+  * (http://www.vorbis.com)[vorbis-tools] - for encoding to ogg format.
+  * (http://www.audiocoding.com)[faac] - for encoding to aac format (with .m4a extension).
+  * (http://www.musepack.net)[mppenc] - for encoding to musepack format (.mpc extension).
+  * (http://www.riverbankcomputing.co.uk/software/pyqt/intro)[PyQt4] - for the GUI front-end, ftransc_qt.
+  * (http://www.xiph.org/paranoia)[cdparanoia] - for ripping CD digita audio.
+  * (http://www.wavpack.com)[wavpack] - for encoding to WavPack format (.wv extension)
 
 
 ## Installing ftransc
@@ -87,7 +87,7 @@ Example 2 - converting from MP3 to AAC, removing original file on success, using
 
 Example 3 - extract audio content from a video files into the MP3 format, use best quality preset:
 ```
-    ftransc -q insane -f mp3 filename1.flv filename2.avi filename3.mpg filename4.vob ...
+    ftransc -q insane -f mp3 filename2.avi filename3.mpg filename4.vob ...
 ```
 
 Example 4 - convert all audio files inside a given folder into WMA format. (This option is not recursive to child-folders)
@@ -125,3 +125,30 @@ The following is the list of supported tags across audio formats that ftransc ca
 | album art   | Y | Y | N | Y | N | N | N | N |
 | album artist | N | N | N | N | N | N | N | N |
 | comment     | N | N | N | N | N | N | N | N |
+
+
+## Screenshots
+
+ftransc GUI front-end, *ftransc_qt*:
+______
+
+![ftranansc_qt](static/images/ftransc_gui.png)
+
+_____
+
+ftransc also uses Nautilus Scripts, so you can right click selection of files and convert like:
+
+static/images/ftransc_nautilus-scripts.png)
+
+_____
+
+### ftransc plugin for Rhythmbox media player:
+- Enabling the plugin:
+![enabling plugin](static/images/rb_plugin1.png)
+
+____
+
+-Converting songs with ftransc from Rhythmbox
+![usin plugin](static/images/rb_plugin2.png)
+
+
