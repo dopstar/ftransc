@@ -9,16 +9,16 @@ There is a GUI front-end to ftransc which is called `ftransc_qt`.
 ## ftransc Dependencies 
 
 The dependencies for ftransc are:
-  * (http://code.google.com/p/mutagen)[mutagen] - for metadata handling
-  * (http://www.ffmpeg.org)[ffmpeg] - for decoding all input multimedia files and encoding to  wma format.
-  * (http://lame.sourceforge.net)[lame] - for encoding to mp3 format.
-  * (http://flac.sourceforge.net)[flac] - for encoding to flac format.
+  * (http://code.google.com/p/mutagen) - for metadata handling
+  * (http://www.ffmpeg.org) - for decoding all input multimedia files and encoding to  wma format.
+  * (http://lame.sourceforge.net) - for encoding to mp3 format.
+  * (http://flac.sourceforge.net) - for encoding to flac format.
   * (http://www.vorbis.com)[vorbis-tools] - for encoding to ogg format.
-  * (http://www.audiocoding.com)[faac] - for encoding to aac format (with .m4a extension).
-  * (http://www.musepack.net)[mppenc] - for encoding to musepack format (.mpc extension).
-  * (http://www.riverbankcomputing.co.uk/software/pyqt/intro)[PyQt4] - for the GUI front-end, ftransc_qt.
-  * (http://www.xiph.org/paranoia)[cdparanoia] - for ripping CD digita audio.
-  * (http://www.wavpack.com)[wavpack] - for encoding to WavPack format (.wv extension)
+  * (http://www.audiocoding.com) - for encoding to aac format (with .m4a extension).
+  * (http://www.musepack.net) - for encoding to musepack format (.mpc extension).
+  * (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.
+  * (http://www.xiph.org/paranoia) - for ripping CD digita audio.
+  * (http://www.wavpack.com) - for encoding to WavPack format (.wv extension)
 
 
 ## Installing ftransc
