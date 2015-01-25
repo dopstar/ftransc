@@ -4,6 +4,7 @@ from ftransc.utils.constants import (
         EXTERNAL_FORMATS, 
         EXTERNAL_ENCODERS, 
         EXTERNAL_ENCODER_OUTPUT_OPT,
+        LOGFILE
         )
 
 
@@ -11,7 +12,7 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
     if outputfolder in (None, ''):
         outputfolder = "./"
     if logfile is None:
-        logfile = open("/dev/null", 'w')
+        logfile = open(LOGFILE, 'w')
 
     audioformat = audioformat.lower()
     basefilename, ext = os.path.splitext(infilename)
@@ -31,7 +32,7 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
             cmdline2 = [utility] + audiopresets.split() + ["-", outfilename]
 
         pipeline1 = Popen(cmdline, stdout=PIPE, stderr=logfile)
-        pipeline = Popen(cmdline2, stdin=pipeline1.stdout,stdout=PIPE, stderr=logfile)
+        pipeline = Popen(cmdline2, stdin=pipeline1.stdout, stdout=PIPE, stderr=logfile)
     else:
         if audiopresets is not None:
             cmdline += audiopresets.split()

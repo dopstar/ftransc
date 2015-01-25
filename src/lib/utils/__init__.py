@@ -6,6 +6,8 @@ import subprocess
 import ConfigParser
 
 from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES, VERSION, LOGFILE
+
+
 def show_dep_status(dep_name, dep_status, deps, fmts, check=False):
     rd = "\033[0;31m"   #red
     gr = "\033[0;32m"   #green
@@ -204,23 +206,40 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_profile(fmt, qual, config_file, is_ext_encoder):
-    profiles = ConfigParser.ConfigParser()
-    profiles.readfp(open(config_file))
+def get_profile(format, quality, config_file, is_ext_encoder, check, list_formats):
+    """
+    Gets audio presets from the config file.
 
-    int_profile_exists = True
-    profile_name = "%s_int" % fmt
+    :param format: audio format (e.g. 'mp3', 'flac', 'wma')
+    :param quality: ftransc audio quality setting (e.g. 'insane', 'high', 'normal', 'low')
+    :param config_file: path to the presets configuration file
+    :param is_ext_encoder: boolean. If True, forces to use the external encoder.
+    :param check:
+    :param list_formats:
+    :return:
+    """
 
-    if profile_name not in profiles.sections():
-        profile_name = "%s_ext" % fmt
-        int_profile_exists = False
+    red, nc = '\033[1;31m', '\033[0m'
+    supported_formats = check_deps(check=check, list_formats=list_formats)
+    format = 'm4a' if format in ("mp4", "m4a", "aac") else format
+    format = 'mpc' if format in ("mpc", "musepack") else format
 
-    if is_ext_encoder and '%s_ext' % fmt in profiles.sections():
-        profile_name = "%s_ext" % fmt
-    elif int_profile_exists:
-        profile_name = "%s_int" % fmt
+    if format not in supported_formats:
+        raise SystemExit("%s%s%s is not a supported format" % (red, format, nc))
+    if not os.path.isfile(config_file):
+        raise SystemExit('The presets file [%s] does not exist' % config_file)
 
-    if qual not in profiles.options(profile_name):
-        raise SystemExit("'%s' is an invalid quality preset." % (str(qual)))
+    if format != 'wav':
+        profiles = ConfigParser.ConfigParser()
+        profiles.readfp(open(config_file))
 
-    return profiles.get(profile_name, qual)
+        internal_profile_exists = '%s_int' % format in profiles.sections()
+        external_profile_exists = '%s_ext' % format in profiles.sections()
+        profile_name = "%s_int" % format
+        if (is_ext_encoder and external_profile_exists) or not internal_profile_exists:
+            profile_name = "%s_ext" % format
+
+        if quality not in profiles.options(profile_name):
+            raise SystemExit("'%s' is an invalid quality preset." % (str(quality)))
+
+        return profiles.get(profile_name, quality)
