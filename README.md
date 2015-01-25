@@ -13,7 +13,7 @@ The dependencies for ftransc are:
   * (http://www.ffmpeg.org) - for decoding all input multimedia files and encoding to  wma format.
   * (http://lame.sourceforge.net) - for encoding to mp3 format.
   * (http://flac.sourceforge.net) - for encoding to flac format.
-  * (http://www.vorbis.com)[vorbis-tools] - for encoding to ogg format.
+  * (http://www.vorbis.com) - for encoding to ogg format.
   * (http://www.audiocoding.com) - for encoding to aac format (with .m4a extension).
   * (http://www.musepack.net) - for encoding to musepack format (.mpc extension).
   * (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.
@@ -126,11 +126,11 @@ The following is the list of supported tags across audio formats that ftransc ca
 | album artist | N | N | N | N | N | N | N | N |
 | comment     | N | N | N | N | N | N | N | N |
 
+______
 
 ## Screenshots
 
 ftransc GUI front-end, *ftransc_qt*:
-______
 
 ![ftranansc_qt](static/images/ftransc_gui.png)
 
@@ -138,7 +138,7 @@ _____
 
 ftransc also uses Nautilus Scripts, so you can right click selection of files and convert like:
 
-static/images/ftransc_nautilus-scripts.png)
+![nautilus scripts](static/images/ftransc_nautilus-scripts.png)
 
 _____
 
@@ -148,7 +148,7 @@ _____
 
 ____
 
--Converting songs with ftransc from Rhythmbox
+- Converting songs with ftransc from Rhythmbox
 ![usin plugin](static/images/rb_plugin2.png)
 
 
