@@ -6,7 +6,6 @@ import subprocess
 import ConfigParser
 
 from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES, VERSION, LOGFILE
-
 def show_dep_status(dep_name, dep_status, deps, fmts, check=False):
     rd = "\033[0;31m"   #red
     gr = "\033[0;32m"   #green
@@ -62,42 +61,49 @@ def upgrade_version(current_version):
     upgrades to the latest available version
     """
     
-    trunk_url = 'http://ftransc.googlecode.com/svn/trunk/'
+    trunk_url = 'https://github.com/dopstar/ftransc.git'
+    version_url = 'https://raw.githubusercontent.com/dopstar/ftransc/master/src/version'
     tmp_dir = tempfile.mktemp(prefix='ftransc_')
     ftransc_doc_dir = '/usr/share/doc/ftransc'
     if os.environ['USER'] != 'root':
         raise SystemExit('try using "sudo", you have to be "root" on this one.')
-    target  = '%s/version' % trunk_url
     try:
-        latest  = map(int, urllib.urlopen(target).read().strip().split('.'))
+        latest = map(int, urllib.urlopen(version_url).read().strip().split('.'))
     except IOError:
         raise SystemExit('ftransc upgrade failed: \033[1;31moffline\033[0m')
     current = map(int, current_version.split('.'))
     latest_version = '.'.join(map(str, latest))
 
     if latest > current:
-        cmd = ['svn', 'export', trunk_url, tmp_dir]
+        cmd = ['git', 'clone', trunk_url, tmp_dir]
         with open('/dev/null', 'w') as devnull:
-            subprocess.Popen(cmd, 
-                             stdout=subprocess.PIPE, 
-                             stderr=devnull).communicate()
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=devnull)
+            p.communicate()
+            if p.returncode:
+                raise SystemExit('Upgrade failed with status: {0}'.format(p.returncode))
+
             os.chdir(ftransc_doc_dir)
             cmd = ['make', 'uninstall']
             subprocess.Popen(cmd, 
                              stdout=subprocess.PIPE, 
                              stderr=devnull).communicate()
+
             cmd = ['make', 'install']
             os.chdir(tmp_dir)
             subprocess.Popen(cmd, 
                              stdout=subprocess.PIPE, 
                              stderr=devnull).communicate()
+
             os.chdir('..')
             cmd = ['rm', '-r', '-f', tmp_dir]
             subprocess.Popen(cmd, 
                              stdout=subprocess.PIPE, 
                              stderr=devnull).communicate()
-            raise SystemExit('upgraded from version [\033[0;31m%s\033[0m] to version [\033[0;32m%s\033[0m]' % \
-                     (current_version, latest_version))
+            raise SystemExit(
+                'upgraded from version [\033[0;31m{0}\033[0m] to version [\033[0;32m{1}\033[0m]'.format(
+                    current_version, latest_version
+                )
+            )
     raise SystemExit('You are already on the latest version.')
 
 def print2(msg, noreturn=False, silent=False):

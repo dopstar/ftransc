@@ -4,7 +4,7 @@ install:
 	install -m 755 src/ftransc.py /usr/local/bin/ftransc
 	install -m 755 src/ftransc_qt.py /usr/local/bin/ftransc_qt
 	mkdir -p -m 755 /usr/share/doc/ftransc 2> /dev/null || :
-	install -m 644 Changelog README.md AUTHORS Makefile /usr/share/doc/ftransc
+	install -m 644 Changelog README.md AUTHORS Makefile src/version /usr/share/doc/ftransc
 	install -m 644 ftransc.1.gz /usr/share/man/man1
 	mkdir -p -m 775 ~/.local/share/nautilus/scripts/ftransc 2> /dev/null || :
 	ln -s /usr/local/bin/ftransc ~/.local/share/nautilus/scripts/ftransc/convert\ to\ MP3

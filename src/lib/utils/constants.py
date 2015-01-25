@@ -1,7 +1,7 @@
 #!/usr/bin/python
 NO_TAGS             = False
 SILENT              = False  
-VERSION             = '5.1.0'
+VERSION             = open('/usr/share/doc/ftransc/version').read().strip()
 LOGFILE             = '/dev/null'
 SUPPORTED_FORMATS   = set(['mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc', 'wv', 'avi'])
 EXTERNAL_FORMATS    = set(["mpc", "wv"])
