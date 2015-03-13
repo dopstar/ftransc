@@ -9,23 +9,23 @@ There is a GUI front-end to ftransc which is called `ftransc_qt`.
 ## ftransc Dependencies 
 
 The dependencies for ftransc are:
-  * (http://code.google.com/p/mutagen) - for metadata handling
-  * (http://www.ffmpeg.org) - for decoding all input multimedia files and encoding to  wma format.
-  * (http://lame.sourceforge.net) - for encoding to mp3 format.
-  * (http://flac.sourceforge.net) - for encoding to flac format.
-  * (http://www.vorbis.com) - for encoding to ogg format.
-  * (http://www.audiocoding.com) - for encoding to aac format (with .m4a extension).
-  * (http://www.musepack.net) - for encoding to musepack format (.mpc extension).
-  * (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.
-  * (http://www.xiph.org/paranoia) - for ripping CD digita audio.
-  * (http://www.wavpack.com) - for encoding to WavPack format (.wv extension)
+  * [Mutagen] (https://mutagen.readthedocs.org/) - for metadata handling
+  * [FFMpeg] (http://www.ffmpeg.org) - for decoding all input multimedia files and encoding to  wma format.
+  * [LAME] (http://lame.sourceforge.net) - for encoding to mp3 format.
+  * [Flac] (http://flac.sourceforge.net) - for encoding to flac format.
+  * [Vorbis Tools] (http://www.vorbis.com) - for encoding to ogg format.
+  * [Faac] (http://www.audiocoding.com) - for encoding to aac format (with .m4a extension).
+  * [Musepack] (http://www.musepack.net) - for encoding to musepack format (.mpc extension).
+  * [PyQt] (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.
+  * [CD Paranoia] (http://www.xiph.org/paranoia) - for ripping CD digita audio.
+  * [WavPack] (http://www.wavpack.com) - for encoding to WavPack format (.wv extension)
 
 
 ## Installing ftransc
 
-Install dependencies, including subversion, on Terminal using apt-get as follows.
+Install dependencies, including git, on Terminal using apt-get as follows.
 ```
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc subversion python-qt4 cdparanoia wavpack
+    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc git python-qt4 cdparanoia wavpack
 ```
 
 Install `ftransc`.
