@@ -1,6 +1,15 @@
 #!/usr/bin/python
+from subprocess import PIPE, Popen
+
+def _determine_ffmpeg_avconv_utility():
+    avutil = Popen(['which', 'ffmpeg', 'avconv'], stdout=PIPE).communicate()[0].strip()
+    avutil = avutil.split()[0].split('/')[-1] if avutil else None
+    if not avutil:
+        raise SystemExit('Please install ffmpeg or avconv.')
+    return avutil
+
 NO_TAGS             = False
-SILENT              = False  
+SILENT              = False
 VERSION             = open('/usr/share/doc/ftransc/version').read().strip()
 LOGFILE             = '/dev/null'
 SUPPORTED_FORMATS   = {'mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc', 'wv', 'avi'}
@@ -22,10 +31,10 @@ EXTERNAL_ENCODER_OUTPUT_OPT = {
     'oggenc'    : '-o',
     'wavpack'   : '-o',
 }
-
+FFMPEG_AVCONV = _determine_ffmpeg_avconv_utility()
 DEPENDENCIES = {
-    'cdparanoia'        : [],
-    'ffmpeg'            : list(SUPPORTED_FORMATS),
-    }
+    'cdparanoia' : [],
+    FFMPEG_AVCONV: list(SUPPORTED_FORMATS),
+}
 for audio_format, encoder in EXTERNAL_ENCODERS.iteritems():
     DEPENDENCIES[encoder] = [audio_format]
