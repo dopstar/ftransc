@@ -53,8 +53,6 @@ def check_deps(check=False, list_formats=False):
         for fmt in supported_formats:
             print "\t%s" % fmt
         raise SystemExit(0)
-
-
     return SUPPORTED_FORMATS
 
 
@@ -70,11 +68,11 @@ def upgrade_version(current_version):
     if os.environ['USER'] != 'root':
         raise SystemExit('try using "sudo", you have to be "root" on this one.')
     try:
-        latest = map(int, urllib.urlopen(version_url).read().strip().split('.'))
+        latest_version =urllib.urlopen(version_url).read().strip()
+        latest = [int(ver) for ver in latest_version.split('.')]
     except IOError:
         raise SystemExit('ftransc upgrade failed: \033[1;31moffline\033[0m')
-    current = map(int, current_version.split('.'))
-    latest_version = '.'.join(map(str, latest))
+    current = [int(ver) for ver in current_version.split('.')]
 
     if latest > current:
         cmd = ['git', 'clone', trunk_url, tmp_dir]
@@ -86,21 +84,15 @@ def upgrade_version(current_version):
 
             os.chdir(ftransc_doc_dir)
             cmd = ['make', 'uninstall']
-            subprocess.Popen(cmd, 
-                             stdout=subprocess.PIPE, 
-                             stderr=devnull).communicate()
+            subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=devnull).communicate()
 
             cmd = ['make', 'install']
             os.chdir(tmp_dir)
-            subprocess.Popen(cmd, 
-                             stdout=subprocess.PIPE, 
-                             stderr=devnull).communicate()
+            subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=devnull).communicate()
 
             os.chdir('..')
             cmd = ['rm', '-r', '-f', tmp_dir]
-            subprocess.Popen(cmd, 
-                             stdout=subprocess.PIPE, 
-                             stderr=devnull).communicate()
+            subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=devnull).communicate()
             raise SystemExit(
                 'upgraded from version [\033[0;31m{0}\033[0m] to version [\033[0;32m{1}\033[0m]'.format(
                     current_version, latest_version

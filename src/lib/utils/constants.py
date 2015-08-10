@@ -1,12 +1,14 @@
 #!/usr/bin/python
-from subprocess import PIPE, Popen
+from subprocess import Popen, PIPE
 
-def _determine_ffmpeg_avconv_utility():
-    avutil = Popen(['which', 'ffmpeg', 'avconv'], stdout=PIPE).communicate()[0].strip()
-    avutil = avutil.split()[0].split('/')[-1] if avutil else None
-    if not avutil:
-        raise SystemExit('Please install ffmpeg or avconv.')
-    return avutil
+def determine_ffmpeg_utility():
+    for util in ["avconv", "ffmpeg"]:
+        found = Popen(["which", util], stdout=PIPE).communicate()[0].strip()
+        if found:
+            return util
+    raise SystemExit("ffmpeg/avconv not installed")
+
+
 
 NO_TAGS             = False
 SILENT              = False
@@ -31,7 +33,7 @@ EXTERNAL_ENCODER_OUTPUT_OPT = {
     'oggenc'    : '-o',
     'wavpack'   : '-o',
 }
-FFMPEG_AVCONV = _determine_ffmpeg_avconv_utility()
+FFMPEG_AVCONV = determine_ffmpeg_utility()
 DEPENDENCIES = {
     'cdparanoia' : [],
     FFMPEG_AVCONV: list(SUPPORTED_FORMATS),

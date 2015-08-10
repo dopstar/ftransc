@@ -51,18 +51,8 @@ class MetaTag(object):
 
     def __init__(self, input_file):
         self.input_file = input_file
-        self.tags = {
-                'title'         : None, 
-                'artist'        : None, 
-                'album'         : None, 
-                'year'          : None, 
-                'genre'         : None, 
-                'tracknumber'   : None,
-                'composer'      : None,
-                'lyrics'        : None,
-                'albumart'      : None,
-                'disk'          : None,
-        }
+        self.tags = {key: None for key in self.__id3_mapping}
+        self.tags['albumart'] = None
         self.coverart = {
             'mime'  : 'image/jpeg',
             'type'  : 3,
@@ -81,17 +71,15 @@ class MetaTag(object):
             for tag, key in self.__tag_mapping[ext].iteritems():
                 if tag == 'albumart':
                     try:
-                        self._extract_albumart(ext, tags)
+                        self._extract_album_art(ext, tags)
                     except:
                         continue
                 elif key in tags:
                     self.tags[tag] = tags[key][0]
                 elif tag == 'lyrics' and key == 'USLT':
-                    for id3tag in tags:
-                        if id3tag.startswith(key):
-                            self.tags[tag] = tags[id3tag].text
+                    self.tags.update({tag: tags[id3tag].text for id3tag in tags if id3tag.startswith(key)})
 
-    def _extract_albumart(self, ext, tags):
+    def _extract_album_art(self, ext, tags):
         tag = self.__tag_mapping[ext].get('albumart')
         if tag is None:
             return
@@ -130,27 +118,20 @@ class MetaTag(object):
         for tag, value in self.tags.items():
             if value is None or tag not in self.__tag_mapping[ext]:
                 continue
-            if tag in ('tracknumber', 'disk') and \
-                (isinstance(value, list) or isinstance(value, tuple)) and \
-                len(value) == 2:
+            if tag in ('tracknumber', 'disk') and isinstance(value, (list, tuple)) and len(value) == 2:
                 value = '%d/%d' % (value[0], value[1])
             if ext == '.mp3':
                 if tag == 'lyrics':
-                    tags[self.__tag_mapping[ext][tag]] = \
-                                    self.__id3_mapping[tag](encoding=3, 
-                                                            lang='eng', 
-                                                            desc='lyrics',
-                                                            text=u'%s' % value)
+                    tags[self.__tag_mapping[ext][tag]] = self.__id3_mapping[tag](
+                        encoding=3, lang='eng', desc='lyrics', text=u'%s' % value
+                    )
                 else:
-                    tags[self.__tag_mapping[ext][tag]] = \
-                                self.__id3_mapping[tag](encoding=3, 
-                                                        text=[u'%s' % value])
+                    tags[self.__tag_mapping[ext][tag]] = self.__id3_mapping[tag](encoding=3, text=[u'%s' % value])
             elif ext in self.exts and ext != '.mp3':
                 if tag == 'tracknumber' and ext == '.m4a':
                     try:
                         trkn = [int(i) for i in str(value).split('/')]
-                        tags[self.__tag_mapping[ext][tag]] = \
-                                [(trkn[0], trkn[1])]
+                        tags[self.__tag_mapping[ext][tag]] = [(trkn[0], trkn[1])]
                     except IndexError:
                         tags[self.__tag_mapping[ext][tag]] = [(trkn[0], 0)]
                 else:
@@ -161,9 +142,9 @@ class MetaTag(object):
         else:
             tags.save()
 
-        self._insert_albumart(ext, output_file)
+        self._insert_album_art(ext, output_file)
 
-    def _insert_albumart(self, ext, output_file):
+    def _insert_album_art(self, ext, output_file):
         if self.coverart['data'] is None:
             return
 
@@ -183,11 +164,13 @@ class MetaTag(object):
         elif ext == '.mp3':
             audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
             if self.coverart['ext'] in ('.m4a', '.ogg', '.flac'):
-                image = mutagen.id3.APIC(desc     = u'',
-                                        encoding = 3,
-                                        data     = self.coverart['data'],
-                                        type     = self.coverart['type'],
-                                        mime     = self.coverart['mime'])
+                image = mutagen.id3.APIC(
+                    desc=u'',
+                    encoding=3,
+                    data=self.coverart['data'],
+                    type=self.coverart['type'],
+                    mime=self.coverart['mime']
+                )
                 audio.tags.add(image)
                 audio.save()
                 return

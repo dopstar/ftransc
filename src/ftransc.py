@@ -18,7 +18,6 @@ from ftransc.utils.convert import convert
 
 from ftransc.utils import (
     upgrade_version,
-    check_deps,
     print2,
     m3u_extract,
     pls_extract,
@@ -32,13 +31,12 @@ from ftransc.utils.metadata import MetaTag
 quality_presets = {}
 
 if __name__ == "__main__":
-    #______________________ colors __________________________
-    rd = "\033[1;31m"
-    gr = "\033[1;32m"
-    yl = "\033[1;33m"
-    bl = "\033[1;34m"
-    pk = "\033[1;35m"
-    cy = "\033[1;36m"
+    red = "\033[1;31m"
+    green = "\033[1;32m"
+    yellow = "\033[1;33m"
+    blue = "\033[1;34m"
+    pink = "\033[1;35m"
+    cyan = "\033[1;36m"
     nc = "\033[0m"
 
     opt, files = parse_args()
@@ -46,11 +44,9 @@ if __name__ == "__main__":
     if opt.upgrade:
         upgrade_version(VERSION)
 
-
     if os.environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as root.')
 
-    #_________________ nautilus scripts ___________________
     if 'convert to ' in sys.argv[0]:
         opt.format = sys.argv[0].split()[-1]
         opt.notify = True
@@ -97,7 +93,6 @@ if __name__ == "__main__":
     old_dir = ''
     total = len(files)
     fails = 0
-    times = []
 
     def consume_queue(input_q, cpucount):
         global outdir
@@ -110,7 +105,6 @@ if __name__ == "__main__":
             filename = input_q.get(False)
             new_dir = os.path.dirname(filename)
             ifile = os.path.basename(filename)
-            tic = time.time()
             logfile = open(LOGFILE, 'a', 0)
             ofile = os.path.splitext(ifile)[0] + "." + fmt
             if outdir:
@@ -130,33 +124,33 @@ if __name__ == "__main__":
 
             if ofile == ifile:
                 print2("%.1f%%| %s| %s%s%s | input = output | %sskipped%s\n" % \
-                       (progress, cpucount, bl, ifile, nc, yl, nc))
+                       (progress, cpucount, blue, ifile, nc, yellow, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if not os.path.exists(ifile):
                 print2("%.1f%%| %s| %s%s%s | %sdoes not exist%s\n" % \
-                       (progress, cpucount, bl, ifile, nc, rd, nc))
+                       (progress, cpucount, blue, ifile, nc, red, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if os.path.isfile(ofile) and not opt.overwrite:
                 print2("%.1f%%| %s| %s%s%s | use '-w' to overwrite | %sskipped%s\n" % \
-                       (progress, cpucount, bl, ifile, nc, yl, nc))
+                       (progress, cpucount, blue, ifile, nc, yellow, nc))
                 fails += 1
                 input_q.task_done()
                 continue
             if os.path.isdir(ifile) and opt.walk is None:
                 print2("%.1f%%| %s| %s%s%s |  use '--directory' | %sskipped%s\n" % \
-                       (progress, cpucount, bl, ifile, nc, yl, nc))
+                       (progress, cpucount, blue, ifile, nc, yellow, nc))
                 fails += 1
                 input_q.task_done()
                 continue
-                #_____________ lockfile creation ________________
+
             swp_file = ".%s.swp" % ifile
             if os.path.isfile(swp_file) and not opt.unlock:
                 print2("%.1f%%| %s| %s%s%s | use '-u' to unlock | %sskipped%s\n" % \
-                       (progress, cpucount, bl, ifile, nc, yl, nc))
+                       (progress, cpucount, blue, ifile, nc, yellow, nc))
                 fails += 1
                 input_q.task_done()
                 continue
@@ -167,48 +161,46 @@ if __name__ == "__main__":
                 except IOError:
                     input_q.task_done()
                     raise SystemExit("%.1f%%| %s| %sNo permissions%s to write to this folder" % \
-                                     (progress, cpucount, rd, nc))
-                    #______________ extract metadata ________________
+                                     (progress, cpucount, red, nc))
+
             try:
                 if not no_tags:
                     metadata = MetaTag(ifile)
             except IOError:
                 print2("%.1f%%| %s| %s%d/%d%s | %s%s%s | %sUnreadable%s\n" %
-                       (progress, cpucount, bl, ifile, nc, rd, nc))
+                       (progress, cpucount, blue, ifile, nc, red, nc))
                 os.remove(swp_file)
                 fails += 1
                 input_q.task_done()
                 continue
-                #___________ audio convert ______________
+
             if convert(ifile, fmt, outdir, preset, logfile, opt.external_encoder):
                 print2("%.1f%%| %s| to %s | %s%s%s | %sSuccess%s\n" % \
-                       (progress, cpucount, fmt.upper(), bl, ifile, nc, gr, nc), noreturn=True)
+                       (progress, cpucount, fmt.upper(), blue, ifile, nc, green, nc), noreturn=True)
                 if opt.remove:
                     os.remove(ifile)
                 os.remove(swp_file)
             else:
                 print2("%.1f%%| %s| to %s | %s%s%s | %sFail%s\n" % \
-                       (progress, cpucount, fmt.upper(), bl, ifile, nc, rd, nc), noreturn=True)
+                       (progress, cpucount, fmt.upper(), blue, ifile, nc, red, nc), noreturn=True)
                 os.remove(swp_file)
                 fails += 1
                 input_q.task_done()
                 continue
-                #___________ insert metadata to new audio file ___________
+
             try:
                 if not no_tags:
                     metadata.insert(ofile)
                     del metadata
             except Exception, err:
                 if opt.debug:
-                    print2("%.1f%%| %s| %s%s%s\n" % (progress, cpucount, rd, err.message, nc))
+                    print2("%.1f%%| %s| %s%s%s\n" % (progress, cpucount, red, err.message, nc))
             logfile.close()
-            toc = time.time()
-            times.append(toc - tic)
 
             input_q.task_done()
 
 
-    proc_colors = {0: pk, 1: cy}
+    proc_colors = {0: pink, 1: cyan}
     q = multiprocessing.JoinableQueue()
     for filename in files:
         q.put(filename)
@@ -217,7 +209,8 @@ if __name__ == "__main__":
         num_procs = opt.num_procs
     if len(files) < num_procs:
         num_procs = len(files)
-    time.sleep(1) # wait a sec before start processing. queue might not be full yet
+
+    time.sleep(1)  # wait a sec before start processing. queue might not be full yet
     for pcount in xrange(1, num_procs + 1):
         proc_name = '%sCPU%d%s' % (proc_colors[pcount % 2], pcount, nc)
         x = multiprocessing.Process(target=consume_queue, args=(q, proc_name))

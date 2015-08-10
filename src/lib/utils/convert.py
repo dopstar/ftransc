@@ -1,11 +1,12 @@
 import os
 from subprocess import Popen, PIPE
 from ftransc.utils.constants import (
-        EXTERNAL_FORMATS, 
-        EXTERNAL_ENCODERS, 
-        EXTERNAL_ENCODER_OUTPUT_OPT,
-        LOGFILE
-        )
+    EXTERNAL_FORMATS,
+    EXTERNAL_ENCODERS,
+    EXTERNAL_ENCODER_OUTPUT_OPT,
+    LOGFILE,
+    FFMPEG_AVCONV
+)
 
 
 def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfile=None, external_enc=False):
@@ -19,8 +20,7 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
     outfilename = outputfolder + '/' + basefilename + '.' + audioformat
     utility = _get_external_encoder(audioformat)
 
-    encoder = _determine_ffmpeg_utility()
-    cmdline = [encoder, '-y', '-i']
+    cmdline = [FFMPEG_AVCONV, '-y', '-i']
     cmdline += [infilename]
 
     if utility not in (None, '') and (external_enc or audioformat in EXTERNAL_FORMATS):
@@ -45,12 +45,3 @@ def convert(infilename, audioformat, outputfolder=None, audiopresets=None, logfi
 
 def _get_external_encoder(audioformat):
     return EXTERNAL_ENCODERS.get(audioformat)
-
-
-def _determine_ffmpeg_utility():
-    for util in ["avconv", "ffmpeg"]:
-        found = Popen(["which", util], stdout=PIPE).communicate()[0].strip()
-        if found:
-            return util
-
-    raise SystemExit("ffmpeg/avconv not installed")
