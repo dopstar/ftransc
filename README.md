@@ -25,7 +25,7 @@ The dependencies for ftransc are:
 
 Install dependencies, including git, on Terminal using apt-get as follows.
 ```
-    sudo apt-get install ffmpeg lame flac faac vorbis-tools python-mutagen mppenc git python-qt4 cdparanoia wavpack
+    sudo apt-get install libav-tools lame flac faac vorbis-tools python-mutagen mppenc git python-qt4 cdparanoia wavpack
 ```
 
 Install `ftransc`.
