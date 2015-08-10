@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 ftransc is a script that bundles up utilities for audio conversion.
 """
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             filename = input_q.get(False)
             new_dir = os.path.dirname(filename)
             ifile = os.path.basename(filename)
-            logfile = open(LOGFILE, 'a', 0)
+            logfile = open(LOGFILE, 'a')
             ofile = os.path.splitext(ifile)[0] + "." + fmt
             if outdir:
                 ofile = outdir + os.sep + ofile
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                 if not no_tags:
                     metadata.insert(ofile)
                     del metadata
-            except Exception, err:
+            except Exception as err:
                 if opt.debug:
                     print2("%.1f%%| %s| %s%s%s\n" % (progress, cpucount, red, err.message, nc))
             logfile.close()
@@ -211,7 +211,7 @@ if __name__ == "__main__":
         num_procs = len(files)
 
     time.sleep(1)  # wait a sec before start processing. queue might not be full yet
-    for pcount in xrange(1, num_procs + 1):
+    for pcount in range(1, num_procs + 1):
         proc_name = '%sCPU%d%s' % (proc_colors[pcount % 2], pcount, nc)
         x = multiprocessing.Process(target=consume_queue, args=(q, proc_name))
         x.daemon = True

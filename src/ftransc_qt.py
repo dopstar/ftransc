@@ -117,11 +117,11 @@ class Window(QtGui.QDialog):
         row_count = self.filesTable.rowCount()
         audio_codec = str(self.codec_combobox.currentText()).lower()
         audio_quality = str(self.quality_combobox.currentText()).lower()
-        for row in xrange(row_count):
+        for row in range(row_count):
             status = QtGui.QTableWidgetItem('Scheduled')
             self.filesTable.setItem(0, 3, status)
             self.filesTable.repaint()
-        for row in xrange(row_count):
+        for row in range(row_count):
             filename = self.filesTable.item(0, 0).text()
             status = QtGui.QTableWidgetItem('Converting...')
             self.filesTable.setItem(0, 3, status)

@@ -3,7 +3,7 @@ import urllib
 import tempfile
 import optparse
 import subprocess
-import ConfigParser
+import configparser
 
 from ftransc.utils.constants import SUPPORTED_FORMATS, DEPENDENCIES, VERSION, LOGFILE
 
@@ -38,7 +38,7 @@ def check_deps(check=False, list_formats=False):
                                    stdout=subprocess.PIPE).communicate()[0].strip() 
         show_dep_status(dep, status, DEPENDENCIES, SUPPORTED_FORMATS, check=check)
 
-    for pkg, mod in module_map.iteritems():
+    for pkg, mod in module_map.items():
         try:
             import mod
             show_dep_status(pkg, False, {}, [], check=check) #negative logic
@@ -49,9 +49,9 @@ def check_deps(check=False, list_formats=False):
     if list_formats:
         supported_formats = list(SUPPORTED_FORMATS)
         supported_formats.sort()
-        print "Supported Formats:"
+        print("Supported Formats:")
         for fmt in supported_formats:
-            print "\t%s" % fmt
+            print("\t%s" % fmt)
         raise SystemExit(0)
     return SUPPORTED_FORMATS
 
@@ -103,9 +103,9 @@ def upgrade_version(current_version):
 def print2(msg, noreturn=False, silent=False):
     if not silent:
         if noreturn:
-            print msg,
+            print(msg)
         else:
-            print msg
+            print(msg)
 
 def read_playlist(playlist):
     try:
@@ -140,9 +140,9 @@ def rip_compact_disc():
     dest_folder = 'CD-%d' % (len(child_folders) + 1)
     os.system('mkdir -p %s/%s' % (base_folder, dest_folder))
     os.chdir('%s/%s' % (base_folder, dest_folder))
-    print 'Ripping Compact Disc (CD)...'
+    print('Ripping Compact Disc (CD)...')
     os.system('cdparanoia -B >/dev/null 2>&1')
-    print 'Finished ripping CD'
+    print('Finished ripping CD')
     walker = os.walk('%s/%s' % (base_folder, dest_folder))
     parent_folder, child_folders, child_files = walker.next()
     return child_files
@@ -222,7 +222,7 @@ def get_profile(format, quality, config_file, is_ext_encoder, check, list_format
         raise SystemExit('The presets file [%s] does not exist' % config_file)
 
     if format != 'wav':
-        profiles = ConfigParser.ConfigParser()
+        profiles = configparser.ConfigParser()
         profiles.readfp(open(config_file))
 
         internal_profile_exists = '%s_int' % format in profiles.sections()

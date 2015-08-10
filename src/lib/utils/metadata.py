@@ -68,7 +68,7 @@ class MetaTag(object):
         ext = os.path.splitext(self.input_file)[1].lower()
         if ext in self.exts:
             tags = mutagen.File(self.input_file)
-            for tag, key in self.__tag_mapping[ext].iteritems():
+            for tag, key in self.__tag_mapping[ext].items():
                 if tag == 'albumart':
                     try:
                         self._extract_album_art(ext, tags)
