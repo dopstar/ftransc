@@ -130,6 +130,12 @@ ______
 
 ## Screenshots
 
+The image below shows `ftransc` command in action on Terminal as well as the ftransc manpage (`man ftransc`):
+
+![ftranansc_cli](static/images/ftransc_cli.png)
+
+_____
+
 ftransc GUI front-end, *ftransc_qt*:
 
 ![ftranansc_qt](static/images/ftransc_gui.png)
