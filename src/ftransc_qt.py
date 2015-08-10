@@ -4,7 +4,7 @@ import os
 import sys
 from PyQt4 import QtCore, QtGui
 
-from ftransc.utils import m3u_extract, check_deps
+from ftransc.utils import m3u_extract, check_deps, metadata
 
 from ftransc.utils.constants import VERSION
 
@@ -74,8 +74,7 @@ class Window(QtGui.QDialog):
         self.setWindowTitle("ftransc Audio Converter v%s" % VERSION)
         self.resize(700, 400)
 
-
-        self.connect(cancel_button, 
+        self.connect(cancel_button,
                      QtCore.SIGNAL('clicked()'), 
                      QtGui.qApp, 
                      QtCore.SLOT('quit()'))
@@ -84,7 +83,6 @@ class Window(QtGui.QDialog):
             self.cmdlinefiles = cmdlinefiles
             self.add_files(noninteractive=True)
             self.cmdlinefiles = None
-
 
     def add_files(self, noninteractive=False):
         if noninteractive:
@@ -100,17 +98,18 @@ class Window(QtGui.QDialog):
                                                        filt)
 
         for i in files:
-            fname = QtGui.QTableWidgetItem(i)
-            status = QtGui.QTableWidgetItem('Scheduled')
+            tags = {k: v if v is not None else '' for k, v in metadata.MetaTag(unicode(i)).tags.iteritems()}
             row = self.filesTable.rowCount()
             self.filesTable.insertRow(row)
-            self.filesTable.setItem(row, 0, fname)
-            self.filesTable.setItem(row, 1, status)
+            self.filesTable.setItem(row, 3, QtGui.QTableWidgetItem('Scheduled'))
+            self.filesTable.setItem(row, 2, QtGui.QTableWidgetItem(tags['artist']))
+            self.filesTable.setItem(row, 1, QtGui.QTableWidgetItem(tags['title']))
+            self.filesTable.setItem(row, 0, QtGui.QTableWidgetItem(i))
 
     def browse(self):
         folder = QtGui.QFileDialog.getExistingDirectory(self,
-                                                       'Add output folder',
-                                                      QtCore.QDir.currentPath())
+                                                        'Add output folder',
+                                                        QtCore.QDir.currentPath())
         if folder is not None or folder != '':
             self.foldername.setText(folder)
 
@@ -120,12 +119,12 @@ class Window(QtGui.QDialog):
         audio_quality = str(self.quality_combobox.currentText()).lower()
         for row in xrange(row_count):
             status = QtGui.QTableWidgetItem('Scheduled')
-            self.filesTable.setItem(0, 1, status)
+            self.filesTable.setItem(0, 3, status)
             self.filesTable.repaint()
         for row in xrange(row_count):
             filename = self.filesTable.item(0, 0).text()
             status = QtGui.QTableWidgetItem('Converting...')
-            self.filesTable.setItem(0, 1, status)
+            self.filesTable.setItem(0, 3, status)
             self.filesTable.repaint()
             self.filesTable.repaint()
             
@@ -145,14 +144,15 @@ class Window(QtGui.QDialog):
             self.filesTable.removeRow(0)
             self.filesTable.repaint()
 
-
     def createFilesTable(self):
-        self.filesTable = QtGui.QTableWidget(0, 2) 
+        self.filesTable = QtGui.QTableWidget(0, 4)
         self.filesTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.filesTable.setHorizontalHeaderLabels(("Filename", "Status"))
+        self.filesTable.setHorizontalHeaderLabels(["Filename", "Title", "Artist", "Status"])
         self.filesTable.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch)
+        self.filesTable.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+        self.filesTable.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.Stretch)
         self.filesTable.verticalHeader().hide()
-        self.filesTable.setShowGrid(False)
+        self.filesTable.setShowGrid(True)
         self.filesTable.setAlternatingRowColors(True)
         self.filesTable.setUpdatesEnabled(True)
         self.filesTable.keyPressEvent = self.delete_items

@@ -1,3 +1,6 @@
+ftransc 5.1.5 (10 Aug 2015):
+	+ added title and artist columns on ftransc_qt
+
 ftransc 5.1.4 (10 Aug 2015):
 	+ code cleanup.
 
