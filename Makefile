@@ -1,6 +1,7 @@
 MAJOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f1`
 MINOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f2`
 install:
+	sudo apt-get install libav-tools lame flac faac vorbis-tools python-mutagen mppenc git python-qt4 cdparanoia wavpack
 	install -m 755 src/ftransc.py /usr/local/bin/ftransc
 	install -m 755 src/ftransc_qt.py /usr/local/bin/ftransc_qt
 	mkdir -p -m 755 /usr/share/doc/ftransc 2> /dev/null || :
