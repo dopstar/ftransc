@@ -1,5 +1,9 @@
+ftransc 5.1.7 (26 Aug 2015):
+	+ fixed rhythmbox plugin
+
 ftransc 5.1.6 (10 Aug 2015):
 	+ installing dependencies via make install
+
 ftransc 5.1.5 (10 Aug 2015):
 	+ added title and artist columns on ftransc_qt
 

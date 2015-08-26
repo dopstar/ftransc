@@ -25,9 +25,10 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 
 import rb
-from gi.repository import Gtk, GObject, GLib, Peas
+from gi.repository import Gio, GObject, GLib, Peas
 from gi.repository import RB
 
+import shlex
 import gettext
 gettext.install('rhythmbox', RB.locale_dir())
 
@@ -49,38 +50,41 @@ ui_definition = """
 class ConvertFilesPlugin (GObject.Object, Peas.Activatable):
     __gtype_name__ = 'ConvertFilesPlugin'
 
-    object = GObject.property (type = GObject.Object)
+    object = GObject.property(type=GObject.Object)
 
     def __init__(self):
-        GObject.Object.__init__(self)
+        super(ConvertFilesPlugin, self).__init__()
 
     def do_activate(self):
-        self.__action = Gtk.Action(name='ConvertFiles', label=_("Convert Songs (ftransc)"),
-                                tooltip=_("Convert file format to MP3, OGG, AAC, etc"),
-                                stock_id='')
-        shell = self.object
-        self.__action.connect('activate', self.convert_files, shell)
-        self.__action_group = Gtk.ActionGroup(name='ConvertFilesActionGroup')
-        self.__action_group.add_action(self.__action)
-        uim = shell.props.ui_manager
-        uim.insert_action_group(self.__action_group, -1)
-        self.__ui_id = uim.add_ui_from_string(ui_definition)
+        self.__action = Gio.SimpleAction(name='ConvertFiles')
+        self.__action.connect('activate', self.convert_files)
+        
+        app = Gio.Application.get_default()
+        app.add_action(self.__action)
+        
+        item = Gio.MenuItem()
+        item.set_label(_("Convert Songs (ftransc)"))
+        item.set_detailed_action('app.ConvertFiles')
+        app.add_plugin_menu_item('edit', 'ConvertFiles', item)
+        app.add_plugin_menu_item('browser-popup', 'ConvertFiles', item)
+        app.add_plugin_menu_item('playlist-popup', 'ConvertFiles', item)
+        app.add_plugin_menu_item('queue-popup', 'ConvertFiles', item)
 
     def do_deactivate(self):
         shell = self.object
-        uim = shell.props.ui_manager
-        uim.remove_action_group(self.__action_group)
-        uim.remove_ui(self.__ui_id)
-        uim.ensure_update()
-
-        del self.__action_group
+        app = Gio.Application.get_default()
+        app.remove_action('ConvertFiles')
+        app.remove_plugin_menu_item('edit', 'ConvertFiles')
+        app.remove_plugin_menu_item('browser-popup', 'ConvertFiles')
+        app.remove_plugin_menu_item('playlist-popup', 'ConvertFiles')
+        app.remove_plugin_menu_item('queue-popup', 'ConvertFiles')
         del self.__action
 
-    def convert_files(self, action, shell):
+    def convert_files(self, action, data):
+        shell = self.object
         page = shell.props.selected_page
         if not hasattr(page, "get_entry_view"):
             return
-
         entries = page.get_entry_view().get_selected_entries()
-        cmdline = 'ftransc_qt ' + " ".join(entry.get_playback_uri() for entry in entries)
+        cmdline = 'ftransc_qt ' + " ".join(shlex.quote(entry.get_playback_uri()) for entry in entries)
         GLib.spawn_command_line_async(cmdline)

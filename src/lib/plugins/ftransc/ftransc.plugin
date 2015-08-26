@@ -1,5 +1,5 @@
 [Plugin]
-Loader=python
+Loader=python3
 Module=ftransc
 IAge=2
 Depends=rb
@@ -8,8 +8,8 @@ Name[en_GB]=ftransc Audio Converter
 Description=Convert selected tracks to other formats like MP3, OGG, WMA, AAC, etc
 Description[en_GB]=Convert selected tracks to other formats like MP3, OGG, WMA, AAC, etc
 Authors=Mkhanyisi Madlavana <mmadlavana@gmail.com>
-Copyright=Copyright © 2012 Mkhanyisi Madlavana
-Website=http://code.google.com/p/ftransc
+Copyright=Copyright © 2015 Mkhanyisi Madlavana
+Website=https://github.com/dopstar/ftransc
 
 [RB]
 InitiallyEnabled=true

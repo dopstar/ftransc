@@ -144,6 +144,12 @@ ftransc also uses Nautilus Scripts, so you can right click selection of files an
 _____
 
 ### ftransc plugin for Rhythmbox media player:
+
+![enabling plugin](static/images/rb_plugin0.png)
+The ftransc plugin for rhythmbox media player allows one to send files from Rhythmbox music player to ftransc for conversion.
+
+____
+
 - Enabling the plugin:
 ![enabling plugin](static/images/rb_plugin1.png)
 
