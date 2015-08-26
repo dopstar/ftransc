@@ -145,8 +145,8 @@ _____
 
 ### ftransc plugin for Rhythmbox media player:
 
+- The ftransc plugin for rhythmbox media player allows one to send files from Rhythmbox music player to ftransc for conversion.
 ![enabling plugin](static/images/rb_plugin0.png)
-The ftransc plugin for rhythmbox media player allows one to send files from Rhythmbox music player to ftransc for conversion.
 
 ____
 
