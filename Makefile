@@ -1,5 +1,4 @@
-MAJOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f1`
-MINOR=`python --version 2> /dev/stdout | awk '{print $$2}' | cut -d+ -f1 | cut -d. -f2`
+DEST_DIR=`python -c "import sysconfig; print sysconfig.get_path('platlib')"`
 install:
 	sudo apt-get install libav-tools lame flac faac vorbis-tools python-mutagen mppenc git python-qt4 cdparanoia wavpack libglib2.0-dev libglib2.0-0 gir1.2-gconf-2.0 
 	install -m 755 src/ftransc.py /usr/local/bin/ftransc
@@ -18,13 +17,13 @@ install:
 	chown ${SUDO_USER}:${SUDO_USER} ~/.local/share/nautilus/scripts/ftransc/
 	mkdir -m 755 /etc/ftransc 2> /dev/null || :
 	install -m 644 src/conf/presets.conf /etc/ftransc
-	mkdir -p -m 755 /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils 2> /dev/null || :
-	install -m 644 src/lib/utils/__init__.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 src/lib/utils/tagmap.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 src/lib/utils/convert.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 src/lib/utils/constants.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	install -m 644 src/lib/utils/metadata.py /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/utils
-	touch /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc/__init__.py
+	mkdir -p -m 755 $(DEST_DIR)/ftransc/utils 2> /dev/null || :
+	install -m 644 src/lib/utils/__init__.py  $(DEST_DIR)/ftransc/utils
+	install -m 644 src/lib/utils/tagmap.py    $(DEST_DIR)/ftransc/utils
+	install -m 644 src/lib/utils/convert.py   $(DEST_DIR)/ftransc/utils
+	install -m 644 src/lib/utils/constants.py $(DEST_DIR)/ftransc/utils
+	install -m 644 src/lib/utils/metadata.py  $(DEST_DIR)/ftransc/utils
+	touch $(DEST_DIR)/ftransc/__init__.py
 	{ which rhythmbox && cp -r src/lib/plugins/ftransc /usr/lib/rhythmbox/plugins; } || :
 
 uninstall:
@@ -34,5 +33,5 @@ uninstall:
 	rm -r -f /usr/share/doc/ftransc
 	rm -r -f ~/.local/share/nautilus/scripts/ftransc
 	rm -r -f /etc/ftransc
-	rm -r -f /usr/lib/python$(MAJOR).$(MINOR)/dist-packages/ftransc
+	rm -r -f $(DEST_DIR)/ftransc
 	rm -r -f /usr/lib/rhythmbox/plugins/ftransc
