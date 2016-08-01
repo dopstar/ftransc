@@ -11,16 +11,21 @@ setup_args = {
     'version': '6.0.0',
     'author': 'Mkhanyisi Madlavana',
     'author_email': 'mkhanyisi@gmail.com',
-    'url': 'http://github.com/dopstar/ftransc',
+    'url': 'https://github.com/dopstar/ftransc',
+    'download_url': 'https://github.com/dopstar/ftransc/tarball/6.0.0',
     'package_dir': {'ftransc': 'ftransc'},
     'description': 'ftransc is a python library for converting audio files across various formats.',
     'long_description': 'ftransc is a python library for converting audio files across various formats.',
     'packages': [
         'ftransc',
+        'ftransc.core',
+        'ftransc.config',
+        'ftransc.metadata',
+        'ftransc.core.queue',
     ],
     'package_data': {'ftransc': ['*.md', 'config/data/*.json']},
     'install_requires': requirements,
-    'keywords': 'Audio, Convert, FFMpeg',
+    'keywords': 'Audio, Convert, ffmpeg, avconv, mp3',
     'classifiers': [
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -30,7 +35,6 @@ setup_args = {
     'entry_points': {
         'console_scripts': [
             'ftransc=ftransc.launcher:cli',
-            'ftransc_qt=ftransc.launcher:gui',
         ]
     }
 }
