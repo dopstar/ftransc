@@ -1,0 +1,98 @@
+{
+    "ogg_int": {
+        "insane" : "-vn -ac 2 -acodec libvorbis -q 10",
+        "extreme": "-vn -ac 2 -acodec libvorbis -q 8",
+        "high"   : "-vn -ac 2 -acodec libvorbis -q 6",
+        "normal" : "-vn -ac 2 -acodec libvorbis -q 3",
+        "low"    : "-vn -ac 2 -acodec libvorbis -q 1",
+        "tiny"   : "-vn -ac 1 -acodec libvorbis -q 0 -ar 32000"
+    },
+    "mp3_int": {
+        "insane" : "-vn -ac 2 -acodec libmp3lame -ab 320k",
+        "extreme": "-vn -ac 2 -acodec libmp3lame -aq 0",
+        "high"   : "-vn -ac 2 -acodec libmp3lame -aq 2",
+        "normal" : "-vn -ac 2 -acodec libmp3lame -aq 4",
+        "low"    : "-vn -ac 2 -acodec libmp3lame -aq 9",
+        "tiny"   : "-vn -ac 1 -acodec libmp3lame -ab 32k -ar 32000"
+    },
+    "m4a_int": {
+        "insane" : "-vn -ac 2 -acodec libfaac -aq 250",
+        "extreme": "-vn -ac 2 -acodec libfaac -aq 220",
+        "high"   : "-vn -ac 2 -acodec libfaac -aq 170",
+        "normal" : "-vn -ac 2 -acodec libfaac -aq 100",
+        "low"    : "-vn -ac 2 -acodec libfaac -aq 50",
+        "tiny"   : "-vn -ac 1 -acodec libfaac -aq 30 -ar 32000"
+    },
+    "wma_int": {
+        "insane" : "-vn -ac 2 -acodec wmav2 -ab 320k",
+        "extreme": "-vn -ac 2 -acodec wmav2 -ab 256k",
+        "high"   : "-vn -ac 2 -acodec wmav2 -ab 192k",
+        "normal" : "-vn -ac 2 -acodec wmav2 -ab 128k",
+        "low"    : "-vn -ac 2 -acodec wmav2 -ab 64k",
+        "tiny"   : "-vn -ac 1 -acodec wmav2 -ab 32k -ar 32000"
+    },
+    "flac_int": {
+        "insane" : "-vn -acodec flac -compression_level 10",
+        "extreme": "-vn -acodec flac -compression_level 8",
+        "high"   : "-vn -acodec flac -compression_level 7",
+        "normal" : "-vn -acodec flac -compression_level 5",
+        "low"    : "-vn -acodec flac -compression_level 3",
+        "tiny"   : "-vn -acodec flac -compression_level 1"        
+    },
+    "avi_int": {
+        "insane" : "-vcodec mpeg4 -vtag divx -vb 2000k -acodec libmp3lame -ac 2 -ab 128k",
+        "extreme": "-vcodec mpeg4 -vtag divx -vb 1700k -acodec libmp3lame -ac 2 -ab 128k",
+        "high"   : "-vcodec mpeg4 -vtag divx -vb 1400k -acodec libmp3lame -ac 2 -ab 128k",
+        "normal" : "-vcodec mpeg4 -vtag divx -vb 1300k -acodec libmp3lame -ac 2 -ab 128k",
+        "low"    : "-vcodec mpeg4 -vtag divx -vb 900k -acodec libmp3lame -ac 2 -ab 128k",
+        "tiny"   : "-vcodec mpeg4 -vtag divx -vb 600k -acodec libmp3lame -ac 2 -ab 128k"
+    },
+    "mpc_ext": {
+        "insane" : "--overwrite --braindead",
+        "extreme": "--overwrite -- insane",
+        "high"   : "--overwrite --extreme",
+        "normal" : "--overwrite --normal",
+        "low"    : "--overwrite --telephone",
+        "tiny"   : "--overwrite --quality 1.00"
+    },
+    "wv_ext": {
+        "insane" : "-i -y -hh",
+        "extreme": "-i -y -hh",
+        "high"   : "-i -y -h",
+        "normal" : "-i -y",
+        "low"    : "-i -y -f",
+        "tiny"   : "-i -y -f"
+    },
+    "ogg_ext": {
+        "insane" : "-q 10",
+        "extreme": "-q 8",
+        "high"   : "-q 6",
+        "normal" : "-q 3",
+        "low"    : "-q 1",
+        "tiny"   : "-q -1"
+    },
+    "mp3_ext": {
+        "insane" : "--cbr -b 320",
+        "extreme": "-V 0",
+        "high"   : "-V 2",
+        "normal" : "-V 4",
+        "low"    : "--preset 64",
+        "tiny"   : "--cbr -b 32 -m m -s 32"
+    },
+    "flac_ext": {
+        "insane" : "--best",
+        "extreme": "-7",
+        "high"   : "-6",
+        "normal" : "-5",
+        "low"    : "-3",
+        "tiny"   : "--fast"
+    },
+    "m4a_ext": {
+        "insane" : "-w -q 500",
+        "extreme": "-w -q 350",
+        "high"   : "-w -q 200",
+        "normal" : "-w",
+        "low"    : "-w -q 50",
+        "tiny"   : "-w -q 10"
+    }
+}  

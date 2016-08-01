@@ -1,0 +1,131 @@
+{
+    ".3gp": {
+        "album": "\u00a9alb",
+        "albumart": "covr",
+        "albumartist": "aART",
+        "artist": "\u00a9ART",
+        "comment": "\u00a9cmt",
+        "composer": "\u00a9wrt",
+        "disk": "disk",
+        "genre": "\u00a9gen",
+        "lyrics": "\u00a9lyr",
+        "title": "\u00a9nam",
+        "tracknumber": "trkn",
+        "year": "\u00a9day"
+    },
+    ".aac": {
+        "album": "\u00a9alb",
+        "albumartist": "aART",
+        "artist": "\u00a9ART",
+        "comment": "\u00a9cmt",
+        "composer": "\u00a9wrt",
+        "disk": "disk",
+        "genre": "\u00a9gen",
+        "lyrics": "\u00a9lyr",
+        "title": "\u00a9nam",
+        "tracknumber": "trkn",
+        "year": "\u00a9day"
+    },
+    ".flac": {
+        "album": "album",
+        "albumart": "metadata_block_picture",
+        "artist": "artist",
+        "composer": "composer",
+        "genre": "genre",
+        "title": "title",
+        "tracknumber": "tracknumber",
+        "year": "date"
+    },
+    ".m4a": {
+        "album": "\u00a9alb",
+        "albumart": "covr",
+        "albumartist": "aART",
+        "artist": "\u00a9ART",
+        "comment": "\u00a9cmt",
+        "composer": "\u00a9wrt",
+        "disk": "disk",
+        "genre": "\u00a9gen",
+        "lyrics": "\u00a9lyr",
+        "title": "\u00a9nam",
+        "tracknumber": "trkn",
+        "year": "\u00a9day"
+    },
+    ".mp3": {
+        "album": "TALB",
+        "albumart": "APIC:",
+        "artist": "TPE1",
+        "comment": "COMM",
+        "composer": "TCOM",
+        "disk": "TPOS",
+        "genre": "TCON",
+        "lyrics": "USLT",
+        "publisher": "TPUB",
+        "title": "TIT2",
+        "tracknumber": "TRCK",
+        "year": "TDRC"
+    },
+    ".mp4": {
+        "album": "\u00a9alb",
+        "albumart": "covr",
+        "albumartist": "aART",
+        "artist": "\u00a9ART",
+        "comment": "\u00a9cmt",
+        "composer": "\u00a9wrt",
+        "disk": "disk",
+        "genre": "\u00a9gen",
+        "lyrics": "\u00a9lyr",
+        "title": "\u00a9nam",
+        "tracknumber": "trkn",
+        "year": "\u00a9day"
+    },
+    ".mpc": {
+        "album": "Album",
+        "artist": "Artist",
+        "composer": "Composer",
+        "genre": "Genre",
+        "title": "Title",
+        "tracknumber": "Track",
+        "year": "Year"
+    },
+    ".ogg": {
+        "album": "album",
+        "albumart": "metadata_block_picture",
+        "artist": "artist",
+        "composer": "composer",
+        "genre": "genre",
+        "title": "title",
+        "tracknumber": "tracknumber",
+        "year": "date"
+    },
+    ".wma": {
+        "album": "WM/AlbumTitle",
+        "albumartist": "WM/AlbumArtist",
+        "artist": "Author",
+        "composer": "WM/Composer",
+        "genre": "WM/Genre",
+        "lyrics": "WM/Lyrics",
+        "publisher": "WM/Publisher",
+        "title": "Title",
+        "tracknumber": "WM/TrackNumber",
+        "year": "WM/Year"
+    },
+    ".wmv": {
+        "album": "WM/AlbumTitle",
+        "artist": "Author",
+        "composer": "WM/Composer",
+        "genre": "WM/Genre",
+        "lyrics": "WM/Lyrics",
+        "publisher": "WM/Publisher",
+        "title": "Title",
+        "tracknumber": "WM/TrackNumber",
+        "year": "WM/Year"
+    },
+    ".wv": {
+        "album": "album",
+        "artist": "artist",
+        "genre": "genre",
+        "title": "title",
+        "tracknumber": "track",
+        "year": "year"
+    }
+}
