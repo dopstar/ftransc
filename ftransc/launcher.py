@@ -31,13 +31,20 @@ def determine_number_of_workers(number_of_files, desired_number_of_workers):
 
 
 def cli():
-    log_format = '[%(asctime)s][%(name)s][%(levelname)s] %(message)s'
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO, format=log_format)
+    opt, files = parse_args()
+
+    if opt.silent:
+        log_level = logging.CRITICAL
+    elif opt.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    log_format = '[%(levelname)s] %(message)s'
+    logging.basicConfig(stream=sys.stdout, level=log_level, format=log_format)
 
     if os.environ['USER'] == 'root':
         raise SystemExit('It is not safe to run ftransc as root.')
 
-    opt, files = parse_args()
     if not files and not opt.walk and not opt.cdrip:
         raise SystemExit("ftransc: no input file")
 

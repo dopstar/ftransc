@@ -1,4 +1,6 @@
 import os
+import logging
+
 import blessings
 
 from ftransc.core import transcode
@@ -6,12 +8,13 @@ from ftransc.metadata import Metadata
 
 
 term = blessings.Terminal()
+logger = logging.getLogger(__name__)
 
 
 def worker(input_q, cpu_count, home_directory, output_directory, audio_format, audio_preset, options):
     while True:
         if input_q.empty():
-            print term.bold("Terminating ftransc process running on %s" % cpu_count)
+            logger.info(term.bold(u"Shutting down worker: %s"), cpu_count)
             break
         progress = input_q.qsize()
         filename = input_q.get(False)
@@ -34,30 +37,44 @@ def worker(input_q, cpu_count, home_directory, output_directory, audio_format, a
                 os.chdir(home_directory)
 
         if output_file_name == input_file_name:
-            print term.red(u"[{0:2}][{1}] {2} [input = output][skipped]".format(progress, cpu_count, input_file_name))
+            logger.warning(term.yellow(
+                u"[{0:2}][{1}] {2} [input = output][skipped]".format(
+                    progress, cpu_count, input_file_name
+                )
+            ))
             input_q.task_done()
             continue
         if not os.path.exists(input_file_name):
-            print term.red(u"[{0:2}][{1}] {2} [does not exist]".format(progress, cpu_count, input_file_name))
+            logger.warning(term.yellow(
+                u"[{0:2}][{1}] {2} [does not exist]".format(
+                    progress, cpu_count, input_file_name
+                )
+            ))
             input_q.task_done()
             continue
         if os.path.isfile(output_file_name) and not options.overwrite:
-            print term.yellow(u'[{0:2}][{1}] {2} [use "-w" to overwrite][skipped]'.format(
-                progress, cpu_count, input_file_name
+            logger.warning(term.yellow(
+                u'[{0:2}][{1}] {2} [use "-w" to overwrite][skipped]'.format(
+                    progress, cpu_count, input_file_name
+                )
             ))
             input_q.task_done()
             continue
         if os.path.isdir(input_file_name) and options.walk is None:
-            print term.yellow(u'[{0:2}][{1}] {2} [use "--directory"][skipped]'.format(
-                progress, cpu_count, input_file_name
+            logger.warning(term.yellow(
+                u'[{0:2}][{1}] {2} [use "--directory"][skipped]'.format(
+                    progress, cpu_count, input_file_name
+                )
             ))
             input_q.task_done()
             continue
 
         swp_file = u".%s.swp" % input_file_name
         if os.path.isfile(swp_file) and not options.unlock:
-            print term.yellow(u'[{0:2}][{1}] {2} [use "-u" to unlock][skipped]'.format(
-                progress, cpu_count, input_file_name
+            logger.warning(term.yellow(
+                u'[{0:2}][{1}] {2} [use "-u" to unlock][skipped]'.format(
+                    progress, cpu_count, input_file_name
+                )
             ))
             input_q.task_done()
             continue
@@ -65,31 +82,38 @@ def worker(input_q, cpu_count, home_directory, output_directory, audio_format, a
             try:
                 with open(swp_file, 'w'):
                     pass
-            except IOError:
+            except IOError as err:
                 input_q.task_done()
-                raise SystemExit(
-                    term.red(u"[{0:2}][{1}] No permissions to write to this folder".format(progress, cpu_count))
-                )
+                logger.fatal(term.red(
+                    u"[{0:2}][{1}] No permissions to write to this folder".format(
+                        progress, cpu_count
+                    )
+                ))
+                raise SystemExit(unicode(err))
 
         try:
             metadata = Metadata(input_file_name)
         except IOError:
-            print term.red(u'[{0:2}][{1}] Unreadable'.format(progress, cpu_count, input_file_name))
+            logger.warning(term.yellow(
+                u'[{0:2}][{1}] Unreadable'.format(
+                    progress, cpu_count, input_file_name
+                )
+            ))
             os.remove(swp_file)
             input_q.task_done()
             continue
 
         if transcode(input_file_name, audio_format, output_directory, audio_preset, options.external_encoder):
-            print term.green(u'[{0:2}][{1}][to {2}] {3} [Success]'.format(
+            logger.info(term.green(u'[{0:2}][{1}][to {2}] {3} [Success]'.format(
                 progress, cpu_count, audio_format.upper(), input_file_name
-            ))
+            )))
             if options.remove:
                 os.remove(input_file_name)
             os.remove(swp_file)
         else:
-            print term.bold_red(u'[{0:2}][{1}][to {2}] {3} [Fail]'.format(
+            logger.error(term.bold_red(u'[{0:2}][{1}][to {2}] {3} [Fail]'.format(
                 progress, cpu_count, audio_format.upper(), input_file_name
-            ))
+            )))
             os.remove(swp_file)
             input_q.task_done()
             continue

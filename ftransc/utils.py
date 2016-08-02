@@ -61,6 +61,8 @@ def parse_args():
                       help='Use the specified number of parallel processes. CPU count is the maximum.')
     parser.add_option('-x', '--ext-encoder', action='store_true', dest='external_encoder',
                       help='Use external encoder (if available)')
+    parser.add_option('--debug', action='store_true', help='Show debug messages.')
+    parser.add_option('-s', '--silent', action='store_true', help='Be very less verbose.')
     return parser.parse_args()
 
 

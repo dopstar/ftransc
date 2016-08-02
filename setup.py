@@ -8,7 +8,7 @@ requirements = [
 
 setup_args = {
     'name': 'ftransc',
-    'version': '6.0.0',
+    'version': '6.0.1',
     'author': 'Mkhanyisi Madlavana',
     'author_email': 'mkhanyisi@gmail.com',
     'url': 'https://github.com/dopstar/ftransc',

@@ -1,9 +1,8 @@
 # What is ftransc
 
-ftransc is a script written in python for the Linux-based operating systems 
-for converting audio files across various formats.
+`ftransc` is the python audio conversion library for the Linux-based operating systems.
 
-There is a GUI front-end to ftransc which is called `ftransc_qt`. 
+~~There is a GUI front-end to ftransc which is called `ftransc_qt`. ~~
 
 
 ## ftransc Dependencies 
@@ -16,17 +15,35 @@ The dependencies for ftransc are:
   * [Vorbis Tools] (http://www.vorbis.com) - for encoding to ogg format.
   * [Faac] (http://www.audiocoding.com) - for encoding to aac format (with .m4a extension).
   * [Musepack] (http://www.musepack.net) - for encoding to musepack format (.mpc extension).
-  * [PyQt] (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.
+  * ~~[PyQt] (http://www.riverbankcomputing.co.uk/software/pyqt/intro) - for the GUI front-end, ftransc_qt.~~
   * [CD Paranoia] (http://www.xiph.org/paranoia) - for ripping CD digita audio.
   * [WavPack] (http://www.wavpack.com) - for encoding to WavPack format (.wv extension)
 
 
-## Installing ftransc
+## Installing ftransc 6+
+
+ftransc version 6 and above is available on PyPI and can be installed as follows:
+```
+    pip install ftransc
+```
+
+Similarly, `ftransc` can be uninstalled as follows:
+```
+    pip uninstall ftransc
+```
+
+Please note that `ftransc 6` is almost a complete rewrite and does not have all the `ftransc 5` features yet. 
+
+
+## Installing ftransc 5
+
+Ftransc versions older than version 6 can be installed as follows:
 
 Install `ftransc`.
 ```
     git clone https://github.com/dopstar/ftransc.git
     cd ftransc
+    git checkout ftransc_legacy
     sudo make uninstall
     sudo make install
 ```
