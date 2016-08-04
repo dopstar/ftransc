@@ -34,6 +34,9 @@ Similarly, `ftransc` can be uninstalled as follows:
 
 Please note that `ftransc 6` is almost a complete rewrite and does not have all the `ftransc 5` features yet. 
 
+### Features New in FTransc 6:
+- `pip install`, `pip uninstall` and `pip download` support
+- Youtube download support.
 
 ## Installing ftransc 5
 

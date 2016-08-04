@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 
+import pafy
 import blessings
 
 from ftransc.constants import (
@@ -54,3 +55,17 @@ def transcode(input_file_name, output_audio_format, output_folder='./', audio_pr
 
 def _get_external_encoder(audio_format):
     return EXTERNAL_ENCODERS.get(audio_format)
+
+
+def is_url(url):
+    return url and not os.path.isfile(url) and isinstance(url, basestring) and (
+        url.startswith(u'http://') or url.startswith(u'https://')
+    )
+
+
+def download_from_youtube(url):
+    stream = pafy.new(url).getbestaudio()
+    filename = stream.title.strip()
+    for c in u' ()][{}><!#&%*~`|\\/"\'':
+        filename = filename.replace(c, u'_')
+    return stream.download(filepath=filename, quiet=True)

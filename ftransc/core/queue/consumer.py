@@ -3,8 +3,8 @@ import logging
 
 import blessings
 
-from ftransc.core import transcode
 from ftransc.metadata import Metadata
+from ftransc.core import transcode, is_url, download_from_youtube
 
 
 term = blessings.Terminal()
@@ -18,6 +18,9 @@ def worker(input_q, cpu_count, home_directory, output_directory, audio_format, a
             break
         progress = input_q.qsize()
         filename = input_q.get(False)
+        if is_url(filename):
+            url = filename
+            filename = download_from_youtube(url)
         new_dir = os.path.dirname(filename)
         input_file_name = os.path.basename(filename)
         output_file_name = os.path.splitext(input_file_name)[0] + "." + audio_format

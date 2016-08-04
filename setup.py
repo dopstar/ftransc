@@ -1,18 +1,21 @@
 from setuptools import setup
 
+version = '6.0.2'
+
 requirements = [
-    'requests',
+    'pafy',
     'mutagen',
     'blessings',
+    'youtube-dl',
 ]
 
 setup_args = {
     'name': 'ftransc',
-    'version': '6.0.1',
+    'version': version,
     'author': 'Mkhanyisi Madlavana',
     'author_email': 'mkhanyisi@gmail.com',
     'url': 'https://github.com/dopstar/ftransc',
-    'download_url': 'https://github.com/dopstar/ftransc/tarball/6.0.0',
+    'download_url': 'https://github.com/dopstar/ftransc/tarball/{0}'.format(version),
     'package_dir': {'ftransc': 'ftransc'},
     'description': 'ftransc is a python library for converting audio files across various formats.',
     'long_description': 'ftransc is a python library for converting audio files across various formats.',
