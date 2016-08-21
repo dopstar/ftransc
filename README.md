@@ -1,4 +1,4 @@
-[![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
+[![Build Status](https://travis-ci.org/dopstar/ftransc.svg?branch=master)](https://travis-ci.org/dopstar/ftransc) [![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
 
 # What is ftransc
 
