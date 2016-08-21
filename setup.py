@@ -1,13 +1,23 @@
 from setuptools import setup
 
-version = '6.0.2'
+version = '6.0.3'
 
 requirements = [
+    'nose',
     'pafy',
     'mutagen',
+    'plumbum',
     'blessings',
     'youtube-dl',
 ]
+
+
+if 'a' in version:
+    dev_status = '3 - Alpha'
+elif 'b' in version:
+    dev_status = '4 - Beta'
+else:
+    dev_status = '5 - Production/Stable'
 
 setup_args = {
     'name': 'ftransc',
@@ -30,8 +40,8 @@ setup_args = {
     'install_requires': requirements,
     'keywords': 'Audio, Convert, ffmpeg, avconv, mp3',
     'classifiers': [
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
+        'Development Status :: {0}'.format(dev_status),
+        'Intended Audience :: End Users/Desktop',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.7',
     ],
