@@ -1,4 +1,5 @@
 import os
+import Queue
 import logging
 
 import blessings
@@ -17,13 +18,17 @@ def worker(input_q, cpu_count, home_directory, output_directory, audio_format, a
             logger.info(term.bold(u"Shutting down worker: %s"), cpu_count)
             break
         progress = input_q.qsize()
-        filename = input_q.get(False)
+        try:
+            filename = input_q.get(False)
+        except Queue.Empty as err:
+            logger.debug(u"%s: %s", type(err), unicode(err))
+            continue
         if is_url(filename):
             url = filename
             filename = download_from_youtube(url)
         new_dir = os.path.dirname(filename)
         input_file_name = os.path.basename(filename)
-        output_file_name = os.path.splitext(input_file_name)[0] + "." + audio_format
+        output_file_name = os.path.splitext(input_file_name)[0] + u"." + audio_format
         if output_directory:
             output_file_name = output_directory + os.sep + output_file_name
             if not output_directory.endswith(os.sep):

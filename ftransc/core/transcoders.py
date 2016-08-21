@@ -64,7 +64,9 @@ def is_url(url):
 
 
 def download_from_youtube(url):
+    logger.debug(u"Fetching audio from [{0}]".format(url))
     stream = pafy.new(url).getbestaudio()
+    logger.debug(u'Found audio/video stream:\n{0}'.format(stream))
     filename = stream.title.strip()
     for c in u' ()][{}><!#&%*~`|\\/"\'':
         filename = filename.replace(c, u'_')

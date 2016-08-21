@@ -1,3 +1,5 @@
+[![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
+
 # What is ftransc
 
 `ftransc` is the python audio conversion library for the Linux-based operating systems.
