@@ -118,26 +118,26 @@ class Metadata(object):
 
             if input_tag_name in ('tracknumber', 'disk'):
                 if isinstance(input_tag_value, (list, tuple)) and len(input_tag_value) == 2:
-                    input_tag_value = u'%d/%d' % tuple(input_tag_value)
+                    input_tag_value = '%d/%d' % tuple(input_tag_value)
 
             if ext == '.mp3':
                 if input_tag_name == 'lyrics':
                     output_tags[output_tag_name] = self.__id3_mapping[input_tag_name](
-                        encoding=3, lang='eng', desc='lyrics', text=u'%s' % input_tag_value
+                        encoding=3, lang='eng', desc='lyrics', text='%s' % input_tag_value
                     )
                 else:
                     output_tags[output_tag_name] = self.__id3_mapping[input_tag_name](
-                        encoding=3, text=[u'%s' % input_tag_value]
+                        encoding=3, text=['%s' % input_tag_value]
                     )
             elif ext in self.__tag_mapping and ext != '.mp3':
                 if input_tag_name == 'tracknumber' and ext == '.m4a':
-                    if u'/' in unicode(input_tag_value):
-                        track_number = [int(i) for i in unicode(input_tag_value).split(u'/')]
+                    if '/' in str(input_tag_value):
+                        track_number = [int(i) for i in str(input_tag_value).split('/')]
                         output_tags[output_tag_name] = [(track_number[0], track_number[1])]
                     else:
                         output_tags[output_tag_name] = [(int(input_tag_value), 0)]
                 else:
-                    output_tags[output_tag_name] = [u'%s' % input_tag_value]
+                    output_tags[output_tag_name] = ['%s' % input_tag_value]
         
         if ext == '.wv':
             output_tags.save(output_file)
@@ -164,7 +164,7 @@ class Metadata(object):
             audio = mutagen.mp3.MP3(output_file, ID3=mutagen.id3.ID3)
             if self.input_cover_art['ext'] in ('.m4a', '.ogg', '.flac'):
                 image = mutagen.id3.APIC(
-                    desc=u'',
+                    desc='',
                     encoding=3,
                     data=self.input_cover_art['data'],
                     type=self.input_cover_art['type'],
@@ -175,7 +175,7 @@ class Metadata(object):
         elif ext == '.flac':
             tags = mutagen.File(output_file)
             image = mutagen.flac.Picture()
-            image.desc = u''
+            image.desc = ''
             image.data = self.input_cover_art['data']
             image.type = self.input_cover_art['type']
             image.mime = self.input_cover_art['mime']

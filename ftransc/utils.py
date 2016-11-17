@@ -18,13 +18,13 @@ def get_audio_presets(audio_format, audio_quality='normal', external_encoder=Fal
 
     default_audio_quality = 'normal'
     audio_presets = AudioPresets().as_dict()
-    encoder_type = u'ext' if external_encoder else u'int'
-    audio_preset_name = u'{0}_{1}'.format(audio_format, encoder_type)
+    encoder_type = 'ext' if external_encoder else 'int'
+    audio_preset_name = '{0}_{1}'.format(audio_format, encoder_type)
     if audio_preset_name not in audio_presets:
-        fallback_encoder_type = u'ext' if encoder_type == u'int' else u'int'
-        fallback_audio_preset_name = u'{0}_{1}'.format(audio_format, fallback_encoder_type)
+        fallback_encoder_type = 'ext' if encoder_type == 'int' else 'int'
+        fallback_audio_preset_name = '{0}_{1}'.format(audio_format, fallback_encoder_type)
         if fallback_audio_preset_name not in audio_presets:
-            raise AudioPresetError(u"The audio format [%s] has no audio preset." % audio_format)
+            raise AudioPresetError("The audio format [%s] has no audio preset." % audio_format)
         audio_preset_name = fallback_audio_preset_name
 
     selected_audio_preset = audio_presets[audio_preset_name]
@@ -70,13 +70,13 @@ def rip_compact_disc():
     base_folder = os.path.expanduser('~/ftransc/ripped_albums')
     os.system('mkdir -p %s' % base_folder)
     walker = os.walk(base_folder)
-    parent_folder, child_folders, child_files = walker.next()
+    parent_folder, child_folders, child_files = next(walker)
     dest_folder = 'CD-%d' % (len(child_folders) + 1)
     os.system('mkdir -p %s/%s' % (base_folder, dest_folder))
     os.chdir('%s/%s' % (base_folder, dest_folder))
-    print 'Ripping Compact Disc (CD)...'
+    print('Ripping Compact Disc (CD)...')
     os.system('cdparanoia -B >/dev/null 2>&1')
-    print 'Finished ripping CD'
+    print('Finished ripping CD')
     walker = os.walk('%s/%s' % (base_folder, dest_folder))
-    parent_folder, child_folders, child_files = walker.next()
+    parent_folder, child_folders, child_files = next(walker)
     return child_files

@@ -11,13 +11,13 @@ from ftransc.utils import get_audio_presets, rip_compact_disc, parse_args
 
 def create_output_directory(directory):
     if not directory:
-        return u''
+        return ''
     output_directory = os.path.abspath(os.path.expanduser(directory))
     if not os.path.isdir(output_directory):
         try:
             os.mkdir(output_directory)
         except OSError:
-            return u''
+            return ''
     return output_directory
 
 
@@ -56,7 +56,10 @@ def cli():
 
     if opt.walk is not None:
         walker = os.walk(opt.walk)
-        working_directory, _, files = walker.next()
+        for working_directory, _, files in os.walk(opt.walk):
+            break
+        else:
+            worker_directory, files = '.', []
         os.chdir(working_directory)
 
     if opt.cdrip:
@@ -69,8 +72,8 @@ def cli():
     time.sleep(1)  # wait a sec before start processing. queue might not be full yet
     num_workers = determine_number_of_workers(len(files), opt.num_procs)
     output_directory = create_output_directory(opt.outdir)
-    for process_count in xrange(1, num_workers + 1):
-        process_name = u'P%d' % process_count
+    for process_count in range(1, num_workers + 1):
+        process_name = 'P%d' % process_count
         worker_args = (queue, process_name, home_directory, output_directory, audio_format, audio_preset, opt)
         process = multiprocessing.Process(target=worker, args=worker_args)
         process.daemon = True

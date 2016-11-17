@@ -35,14 +35,14 @@ def transcode(input_file_name, output_audio_format, output_folder='./', audio_pr
             cmdline2 += [output_opt]
         cmdline2 += [output_file_name]
 
-        logger.debug(u'Command-Line: `{term.green}{0} | {1}{term.normal}`'.format(
-            u' '.join(cmdline), u' '.join(cmdline2), term=term
+        logger.debug('Command-Line: `{term.green}{0} | {1}{term.normal}`'.format(
+            ' '.join(cmdline), ' '.join(cmdline2), term=term
         ))
         pipeline1 = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         pipeline = subprocess.Popen(cmdline2, stdin=pipeline1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     else:
         cmdline += audio_preset.split() + [output_file_name]
-        logger.debug(u'Command-Line: `{term.green}{0}{term.normal}`'.format(u' '.join(cmdline), term=term))
+        logger.debug('Command-Line: `{term.green}{0}{term.normal}`'.format(' '.join(cmdline), term=term))
         pipeline = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     std_out, std_err = pipeline.communicate()
@@ -58,16 +58,16 @@ def _get_external_encoder(audio_format):
 
 
 def is_url(url):
-    return url and not os.path.isfile(url) and isinstance(url, basestring) and (
-        url.startswith(u'http://') or url.startswith(u'https://')
+    return url and not os.path.isfile(url) and isinstance(url, str) and (
+        url.startswith('http://') or url.startswith('https://')
     )
 
 
 def download_from_youtube(url):
-    logger.debug(u"Fetching audio from [{0}]".format(url))
+    logger.debug("Fetching audio from [{0}]".format(url))
     stream = pafy.new(url).getbestaudio()
-    logger.debug(u'Found audio/video stream:\n{0}'.format(stream))
+    logger.debug('Found audio/video stream:\n{0}'.format(stream))
     filename = stream.title.strip()
-    for c in u' ()][{}><!#&%*~`|\\/"\'':
-        filename = filename.replace(c, u'_')
+    for c in ' ()][{}><!#&%*~`|\\/"\'':
+        filename = filename.replace(c, '_')
     return stream.download(filepath=filename, quiet=True)

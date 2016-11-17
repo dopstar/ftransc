@@ -34,5 +34,5 @@ DEPENDENCIES = {
     'cdparanoia': [],
     FFMPEG_AVCONV: list(SUPPORTED_FORMATS),
 }
-for audio_format, encoder in EXTERNAL_ENCODERS.iteritems():
+for audio_format, encoder in EXTERNAL_ENCODERS.items():
     DEPENDENCIES[encoder] = [audio_format]

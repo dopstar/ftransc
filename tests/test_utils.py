@@ -16,11 +16,11 @@ class UtilsTestCase(unittest.TestCase):
             cls.presets = json.load(fd)
 
     def test_presets(self):
-        for audio_format, preset in self.presets.iteritems():
+        for audio_format, preset in self.presets.items():
             is_external = audio_format.endswith('_ext')
             audio_format = audio_format.split('_')[0]
-            for audio_quality, quality_preset in preset.iteritems():
-                self.assertEquals(futils.get_audio_presets(audio_format, audio_quality, is_external), quality_preset)
+            for audio_quality, quality_preset in preset.items():
+                self.assertEqual(futils.get_audio_presets(audio_format, audio_quality, is_external), quality_preset)
 
 if __name__ == '__main__':
     unittest.main()
