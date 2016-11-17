@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '6.0.3'
+version = '6.0.4'
 
 requirements = [
     'nose',
@@ -44,6 +44,9 @@ setup_args = {
         'Intended Audience :: End Users/Desktop',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     'entry_points': {
         'console_scripts': [
