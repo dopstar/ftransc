@@ -20,7 +20,10 @@ def worker(input_q, cpu_count, home_directory, output_directory, audio_format, a
         if input_q.empty():
             logger.info(term.bold("Shutting down worker: %s"), cpu_count)
             break
-        progress = input_q.qsize()
+        try:
+            progress = input_q.qsize()
+        except NotImplementedError:
+            progress = 1
         try:
             filename = input_q.get(False)
         except queue.Empty as err:
