@@ -1,4 +1,5 @@
 import os
+import urlparse
 import optparse
 
 import ftransc
@@ -80,3 +81,35 @@ def rip_compact_disc():
     walker = os.walk('%s/%s' % (base_folder, dest_folder))
     parent_folder, child_folders, child_files = next(walker)
     return child_files
+
+
+def create_directory(directory):
+    if not directory:
+        return ''
+    directory = os.path.abspath(os.path.expanduser(directory))
+    if not os.path.isdir(directory):
+        try:
+            os.mkdir(directory)
+        except OSError:
+            return ''
+    return directory
+
+
+def is_url(url):
+    return url and not os.path.isfile(url) and isinstance(url, str) and (
+        url.startswith('http://') or url.startswith('https://')
+    )
+
+
+def is_youtube_playlist(url):
+    return is_url(url) and urlparse.urlparse(url).path.startswith('/playlist')
+
+
+def get_safe_filename(filename):
+    if not filename:
+        return filename
+    filename = filename.strip()
+    for c in ' ()][{}><!#&%*~`|\\/"\'':
+        filename = filename.replace(c, '_')
+    return filename
+

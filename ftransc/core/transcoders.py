@@ -12,6 +12,8 @@ from ftransc.constants import (
     FFMPEG_AVCONV,
 )
 
+import ftransc.utils
+
 
 term = blessings.Terminal()
 logger = logging.getLogger(__name__)
@@ -57,17 +59,28 @@ def _get_external_encoder(audio_format):
     return EXTERNAL_ENCODERS.get(audio_format)
 
 
-def is_url(url):
-    return url and not os.path.isfile(url) and isinstance(url, str) and (
-        url.startswith('http://') or url.startswith('https://')
-    )
-
-
 def download_from_youtube(url):
     logger.debug("Fetching audio from [{0}]".format(url))
     stream = pafy.new(url).getbestaudio()
     logger.debug('Found audio/video stream:\n{0}'.format(stream))
-    filename = stream.title.strip()
-    for c in ' ()][{}><!#&%*~`|\\/"\'':
-        filename = filename.replace(c, '_')
+    filename = ftransc.utils.get_safe_filename(stream.title)
     return stream.download(filepath=filename, quiet=True)
+
+
+def download_from_youtube_playlist(playlist_url):
+    playlist = pafy.get_playlist(playlist_url)
+    files = []
+    if playlist and playlist.get('items'):
+        cwd = os.getcwd()
+        folder_name = os.path.join(cwd, ftransc.utils.get_safe_filename(playlist['title']))
+        os.mkdir(folder_name)
+        os.chdir(folder_name)
+        for item in playlist['items']:
+            try:
+                stream = item['pafy'].getbestaudio()
+            except KeyError:
+                continue
+            filename = ftransc.utils.get_safe_filename(stream.title)
+            files.append(os.path.join(folder_name, stream.download(filepath=filename, quiet=True)))
+        os.chdir(cwd)
+    return files

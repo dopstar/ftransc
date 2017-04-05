@@ -5,20 +5,11 @@ import logging
 import multiprocessing
 
 
-from ftransc.core.queue import worker
-from ftransc.utils import get_audio_presets, rip_compact_disc, parse_args
+import ftransc.core.queue
+import ftransc.utils
 
 
-def create_output_directory(directory):
-    if not directory:
-        return ''
-    output_directory = os.path.abspath(os.path.expanduser(directory))
-    if not os.path.isdir(output_directory):
-        try:
-            os.mkdir(output_directory)
-        except OSError:
-            return ''
-    return output_directory
+
 
 
 def determine_number_of_workers(number_of_files, desired_number_of_workers):
@@ -31,7 +22,7 @@ def determine_number_of_workers(number_of_files, desired_number_of_workers):
 
 
 def cli():
-    opt, files = parse_args()
+    opt, files = ftransc.utils.parse_args()
 
     if opt.silent:
         log_level = logging.CRITICAL
@@ -52,7 +43,7 @@ def cli():
     home_directory = os.getcwd()
     audio_format = opt.format.lower()
     audio_quality = opt.quality.lower()
-    audio_preset = get_audio_presets(audio_format, audio_quality=audio_quality, external_encoder=opt.external_encoder)
+    audio_preset = ftransc.utils.get_audio_presets(audio_format, audio_quality=audio_quality, external_encoder=opt.external_encoder)
 
     if opt.walk is not None:
         walker = os.walk(opt.walk)
@@ -63,7 +54,7 @@ def cli():
         os.chdir(working_directory)
 
     if opt.cdrip:
-        files = rip_compact_disc()
+        files = ftransc.utils.rip_compact_disc()
 
     queue = multiprocessing.JoinableQueue()
     for filename in files:
@@ -71,11 +62,11 @@ def cli():
 
     time.sleep(1)  # wait a sec before start processing. queue might not be full yet
     num_workers = determine_number_of_workers(len(files), opt.num_procs)
-    output_directory = create_output_directory(opt.outdir)
+    output_directory = ftransc.utils.create_directory(opt.outdir)
     for process_count in range(1, num_workers + 1):
         process_name = 'P%d' % process_count
         worker_args = (queue, process_name, home_directory, output_directory, audio_format, audio_preset, opt)
-        process = multiprocessing.Process(target=worker, args=worker_args)
+        process = multiprocessing.Process(target=ftransc.core.queue.worker, args=worker_args)
         process.daemon = True
         process.start()
 
