@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '6.0.6'
+version = '6.0.7'
 
 requirements = [
     'nose',
@@ -28,7 +28,7 @@ setup_args = {
     'download_url': 'https://github.com/dopstar/ftransc/tarball/{0}'.format(version),
     'package_dir': {'ftransc': 'ftransc'},
     'description': 'ftransc is a python library for converting audio files across various formats.',
-    'long_description': 'ftransc is a python library for converting audio files across various formats.',
+    'long_description': open('README.md').read(),
     'packages': [
         'ftransc',
         'ftransc.core',

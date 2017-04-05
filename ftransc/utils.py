@@ -1,6 +1,10 @@
 import os
-import urlparse
 import optparse
+
+try:
+    import urlparse  # py2
+except ImportError:
+    import urllib.parse as urlparse  # py3
 
 import ftransc
 from ftransc.config import AudioPresets
