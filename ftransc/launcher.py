@@ -4,7 +4,6 @@ import time
 import logging
 import multiprocessing
 
-
 import ftransc.core.queue
 import ftransc.utils
 
@@ -31,7 +30,11 @@ def cli():
     home_directory = os.getcwd()
     audio_format = opt.format.lower()
     audio_quality = opt.quality.lower()
-    audio_preset = ftransc.utils.get_audio_presets(audio_format, audio_quality=audio_quality, external_encoder=opt.external_encoder)
+    audio_preset = ftransc.utils.get_audio_presets(
+        audio_format,
+        audio_quality=audio_quality,
+        external_encoder=opt.external_encoder
+    )
 
     if opt.walk is not None:
         for working_directory, _, files in os.walk(opt.walk):

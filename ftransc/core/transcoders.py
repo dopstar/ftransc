@@ -24,7 +24,7 @@ def transcode(input_file_name, output_audio_format, output_folder='./', audio_pr
     audio_preset = audio_preset or ''
     output_audio_format = output_audio_format.lower()
     base_input_file_name, input_ext = os.path.splitext(input_file_name)
-    output_file_name = output_folder + '/' + base_input_file_name + '.' + output_audio_format
+    output_file_name = output_folder + '/' + os.path.basename(base_input_file_name) + '.' + output_audio_format
 
     encoder = _get_external_encoder(output_audio_format)
     cmdline = [FFMPEG_AVCONV, '-y', '-i', input_file_name]

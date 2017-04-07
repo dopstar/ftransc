@@ -39,6 +39,11 @@ def get_audio_presets(audio_format, audio_quality='normal', external_encoder=Fal
     return selected_audio_preset[audio_quality]
 
 
+def get_audio_formats():
+    audio_presets = AudioPresets().as_dict()
+    return sorted(list({key.split('_')[0].strip() for key in audio_presets}))
+
+
 def parse_args():
     parser = optparse.OptionParser(usage="%prog [options] [files]", version=ftransc.__version__)
     parser.add_option('-f', '--format', type=str, default='mp3',
