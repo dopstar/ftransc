@@ -67,7 +67,7 @@ def download_from_youtube(url):
     return stream.download(filepath=filename, quiet=True)
 
 
-def download_from_youtube_playlist(playlist_url):
+def download_from_youtube_playlist(playlist_url, output_stream_queue=None):
     playlist = pafy.get_playlist(playlist_url)
     files = []
     if playlist and playlist.get('items'):
@@ -81,6 +81,10 @@ def download_from_youtube_playlist(playlist_url):
             except KeyError:
                 continue
             filename = ftransc.utils.get_safe_filename(stream.title)
-            files.append(os.path.join(folder_name, stream.download(filepath=filename, quiet=True)))
+            output_filename = os.path.join(folder_name, stream.download(filepath=filename, quiet=True))
+            if output_stream_queue is not None:
+                output_stream_queue.put(output_filename)
+            else:
+                files.append(output_filename)
         os.chdir(cwd)
     return files

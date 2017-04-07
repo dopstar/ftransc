@@ -1,5 +1,6 @@
 import os
 import optparse
+import multiprocessing
 
 try:
     import urlparse  # py2
@@ -117,3 +118,18 @@ def get_safe_filename(filename):
         filename = filename.replace(c, '_')
     return filename
 
+
+def has_youtube_playlist(files):
+    return bool(files) and any(is_youtube_playlist(filename) for filename in files)
+
+
+def determine_number_of_workers(files, desired_number_of_workers):
+    num_processes = multiprocessing.cpu_count()
+    number_of_files = len(files)
+    if desired_number_of_workers > 0:
+        return desired_number_of_workers
+    if number_of_files < num_processes:
+        if has_youtube_playlist(files):
+            return num_processes
+        return number_of_files
+    return num_processes
