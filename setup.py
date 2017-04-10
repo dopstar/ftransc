@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '6.0.11'
+version = '6.1.0'
 
 requirements = [
     'nose',
