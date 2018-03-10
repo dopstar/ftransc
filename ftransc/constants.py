@@ -1,10 +1,10 @@
-from subprocess import Popen, PIPE
+import os
 
 
 def determine_ffmpeg_utility():
     for util in ["avconv", "ffmpeg"]:
-        found = Popen(["which", util], stdout=PIPE).communicate()[0].strip()
-        if found:
+        retcode = os.system('which %s &> /dev/null' % util)
+        if retcode == 0:
             return util
     raise SystemExit("ffmpeg/avconv not installed")
 
