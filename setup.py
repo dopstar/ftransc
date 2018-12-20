@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '6.1.1'
+version = '6.1.2'
 
 requirements = [
     'nose',
@@ -11,6 +11,8 @@ requirements = [
     'youtube-dl',
 ]
 
+with open('README.md') as fd:
+    long_description = fd.read()
 
 if 'a' in version:
     dev_status = '3 - Alpha'
@@ -28,7 +30,8 @@ setup_args = {
     'download_url': 'https://github.com/dopstar/ftransc/tarball/{0}'.format(version),
     'package_dir': {'ftransc': 'ftransc'},
     'description': 'ftransc is a python library for converting audio files across various formats.',
-    'long_description': 'ftransc is a python library for converting audio files across various formats.',
+    'long_description': long_description,
+    'long_description_content_type': 'text/markdown',
     'packages': [
         'ftransc',
         'ftransc.core',
@@ -48,6 +51,7 @@ setup_args = {
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     'entry_points': {
         'console_scripts': [

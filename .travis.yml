@@ -5,10 +5,8 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
+  - '3.7'
 sudo: false
-env:
-  global:
-    - FOO="BAR"
 install:
   - pip install -U pip
   - pip install -i $PYPI .

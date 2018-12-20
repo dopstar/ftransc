@@ -87,36 +87,36 @@ ______
 ## Screenshots
 
 The image below shows `ftransc` command in action on Terminal as well as the ftransc manpage (`man ftransc`):
-
-![ftranansc_cli](static/images/ftransc_cli.png)
+<!-- /static/images/ftransc_cli.png -->
+![ftranansc_cli](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/ftransc_cli.png)
 
 _____
 
 ftransc GUI front-end, *ftransc_qt*:
 
-![ftranansc_qt](static/images/ftransc_gui.png)
+![ftranansc_qt](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/ftransc_gui.png)
 
 _____
 
 ftransc also uses Nautilus Scripts, so you can right click selection of files and convert like:
 
-![nautilus scripts](static/images/ftransc_nautilus-scripts.png)
+![nautilus scripts](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/ftransc_nautilus-scripts.png)
 
 _____
 
 ### ftransc plugin for Rhythmbox media player:
 
 - The ftransc plugin for rhythmbox media player allows one to send files from Rhythmbox music player to ftransc for conversion.
-![enabling plugin](static/images/rb_plugin0.png)
+![enabling plugin](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/rb_plugin0.png)
 
 ____
 
 - Enabling the plugin:
-![enabling plugin](static/images/rb_plugin1.png)
+![enabling plugin](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/rb_plugin1.png)
 
 ____
 
 - Converting songs with ftransc from Rhythmbox
-![usin plugin](static/images/rb_plugin2.png)
+![using plugin](https://raw.githubusercontent.com/dopstar/ftransc/master/static/images/rb_plugin2.png)
 
 
