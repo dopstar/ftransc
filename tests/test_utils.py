@@ -22,5 +22,6 @@ class UtilsTestCase(unittest.TestCase):
             for audio_quality, quality_preset in preset.items():
                 self.assertEqual(futils.get_audio_presets(audio_format, audio_quality, is_external), quality_preset)
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,7 @@
-[![Build Status](https://travis-ci.org/dopstar/ftransc.svg?branch=master)](https://travis-ci.org/dopstar/ftransc) [![Python Version](https://img.shields.io/pypi/pyversions/ftransc.svg)](https://pypi.python.org/pypi/ftransc) [![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
+[![Build Status](https://travis-ci.org/dopstar/ftransc.svg?branch=master)](https://travis-ci.org/dopstar/ftransc) [
+![Python Version](https://img.shields.io/pypi/pyversions/ftransc.svg)](https://pypi.python.org/pypi/ftransc) 
+[![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
+[![Downloads](https://img.shields.io/pypi/dm/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
 
 # What is ftransc
 

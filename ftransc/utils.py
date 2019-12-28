@@ -1,11 +1,10 @@
 import os
+import re
+import pathlib
 import optparse
 import multiprocessing
 
-try:
-    import urlparse  # py2
-except ImportError:
-    import urllib.parse as urlparse  # py3
+import urllib.parse
 
 import ftransc
 from ftransc.config import AudioPresets
@@ -78,31 +77,20 @@ def parse_args(version=ftransc.__version__):
 
 
 def rip_compact_disc():
-    base_folder = os.path.expanduser('~/ftransc/ripped_albums')
-    os.system('mkdir -p %s' % base_folder)
-    walker = os.walk(base_folder)
-    parent_folder, child_folders, child_files = next(walker)
-    dest_folder = 'CD-%d' % (len(child_folders) + 1)
-    os.system('mkdir -p %s/%s' % (base_folder, dest_folder))
-    os.chdir('%s/%s' % (base_folder, dest_folder))
+    base_dir = pathlib.Path('~/ftransc/ripped_albums').expanduser().absolute()
+    base_dir.mkdir(parents=True, exist_ok=True)
+    _, child_folders, _ = next(os.walk(base_dir))
+
+    child_dir = base_dir.joinpath(f'CD-{len(child_folders) + 1}')
+    child_dir.mkdir(parents=True, exist_ok=True)
+
+    os.chdir(child_dir)
     print('Ripping Compact Disc (CD)...')
     os.system('cdparanoia -B >/dev/null 2>&1')
     print('Finished ripping CD')
-    walker = os.walk('%s/%s' % (base_folder, dest_folder))
-    parent_folder, child_folders, child_files = next(walker)
+
+    _, _, child_files = next(os.walk(child_dir))
     return child_files
-
-
-def create_directory(directory):
-    if not directory:
-        return ''
-    directory = os.path.abspath(os.path.expanduser(directory))
-    if not os.path.isdir(directory):
-        try:
-            os.mkdir(directory)
-        except OSError:
-            return ''
-    return directory
 
 
 def is_url(url):
@@ -112,16 +100,14 @@ def is_url(url):
 
 
 def is_youtube_playlist(url):
-    return is_url(url) and urlparse.urlparse(url).path.startswith('/playlist')
+    return is_url(url) and urllib.parse.urlparse(url).path.startswith('/playlist')
 
 
 def get_safe_filename(filename):
     if not filename:
         return filename
-    filename = filename.strip()
-    for c in ' ()][{}><!#&%*~`|\\/"\'':
-        filename = filename.replace(c, '_')
-    return filename
+    regex = re.compile(r'[\s)(\]\[}{><!#&%*~`|\\/"\']+', re.DOTALL)
+    return regex.sub(r'_', filename.strip())
 
 
 def has_youtube_playlist(files):
@@ -131,8 +117,11 @@ def has_youtube_playlist(files):
 def determine_number_of_workers(files, desired_number_of_workers):
     num_processes = multiprocessing.cpu_count()
     number_of_files = len(files)
+    contains_youtube_playlist = has_youtube_playlist(files)
     if desired_number_of_workers > 0:
-        return desired_number_of_workers
+        if contains_youtube_playlist:
+            return desired_number_of_workers
+        return min([desired_number_of_workers, number_of_files])
     if number_of_files < num_processes:
         if has_youtube_playlist(files):
             return num_processes

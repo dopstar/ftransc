@@ -1,9 +1,8 @@
 from setuptools import setup
 
-version = '6.1.3'
+version = '7.0.0'
 
 requirements = [
-    'nose',
     'pafy',
     'mutagen',
     'plumbum',
@@ -46,8 +45,6 @@ setup_args = {
         'Development Status :: {0}'.format(dev_status),
         'Intended Audience :: End Users/Desktop',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],

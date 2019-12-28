@@ -3,6 +3,7 @@ import sys
 import time
 import logging
 import multiprocessing
+import pathlib
 
 import ftransc.core.queue
 import ftransc.utils
@@ -52,7 +53,14 @@ def cli():
 
     time.sleep(1)  # wait a sec before start processing. queue might not be full yet
     num_workers = ftransc.utils.determine_number_of_workers(files, opt.num_procs)
-    output_directory = ftransc.utils.create_directory(opt.outdir)
+
+    output_directory = ''
+    if opt.outdir:
+        path = pathlib.Path(opt.outdir)
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+
+        output_directory = str(path.expanduser())
     for process_count in range(1, num_workers + 1):
         process_name = 'P%d' % process_count
         exit_delay = ftransc.utils.has_youtube_playlist(files)
