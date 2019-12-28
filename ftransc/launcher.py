@@ -18,11 +18,11 @@ def cli():
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
-    log_format = '[%(levelname)s] %(message)s'
+    log_format = "[%(levelname)s] %(message)s"
     logging.basicConfig(stream=sys.stdout, level=log_level, format=log_format)
 
-    if os.environ['USER'] == 'root':
-        raise SystemExit('It is not safe to run ftransc as root.')
+    if os.environ["USER"] == "root":
+        raise SystemExit("It is not safe to run ftransc as root.")
 
     if not files and not opt.walk and not opt.cdrip:
         raise SystemExit("ftransc: no input file")
@@ -32,16 +32,14 @@ def cli():
     audio_format = opt.format.lower()
     audio_quality = opt.quality.lower()
     audio_preset = ftransc.utils.get_audio_presets(
-        audio_format,
-        audio_quality=audio_quality,
-        external_encoder=opt.external_encoder
+        audio_format, audio_quality=audio_quality, external_encoder=opt.external_encoder
     )
 
     if opt.walk is not None:
         for working_directory, _, files in os.walk(opt.walk):
             break
         else:
-            worker_directory, files = '.', []
+            worker_directory, files = ".", []
         os.chdir(working_directory)
 
     if opt.cdrip:
@@ -54,7 +52,7 @@ def cli():
     time.sleep(1)  # wait a sec before start processing. queue might not be full yet
     num_workers = ftransc.utils.determine_number_of_workers(files, opt.num_procs)
 
-    output_directory = ''
+    output_directory = ""
     if opt.outdir:
         path = pathlib.Path(opt.outdir)
         if not path.exists():
@@ -62,10 +60,21 @@ def cli():
 
         output_directory = str(path.expanduser())
     for process_count in range(1, num_workers + 1):
-        process_name = 'P%d' % process_count
+        process_name = "P%d" % process_count
         exit_delay = ftransc.utils.has_youtube_playlist(files)
-        worker_args = (queue, process_name, home_directory, output_directory, audio_format, audio_preset, opt, exit_delay)
-        process = multiprocessing.Process(target=ftransc.core.queue.worker, args=worker_args)
+        worker_args = (
+            queue,
+            process_name,
+            home_directory,
+            output_directory,
+            audio_format,
+            audio_preset,
+            opt,
+            exit_delay,
+        )
+        process = multiprocessing.Process(
+            target=ftransc.core.queue.worker, args=worker_args
+        )
         process.daemon = True
         process.start()
 
