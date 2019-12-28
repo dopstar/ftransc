@@ -4,7 +4,7 @@ import json
 
 
 class BaseConfig(object):
-    config_file = ''
+    config_file = ""
 
     def __init__(self):
         self.__data = {}
@@ -12,7 +12,9 @@ class BaseConfig(object):
 
     def __parse(self):
         if self.config_file:
-            config_file = os.path.join(os.path.dirname(__file__), 'data', self.config_file)
+            config_file = os.path.join(
+                os.path.dirname(__file__), "data", self.config_file
+            )
             with open(config_file) as fd:
                 self.__data = json.load(fd)
 
@@ -30,8 +32,8 @@ class BaseConfig(object):
 
 
 class AudioPresets(BaseConfig):
-    config_file = 'presets.json'
+    config_file = "presets.json"
 
 
 class TagMap(BaseConfig):
-    config_file = 'tagmap.json'
+    config_file = "tagmap.json"

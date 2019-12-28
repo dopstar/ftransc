@@ -3,14 +3,14 @@ import os
 
 def determine_ffmpeg_utility():
     for util in ["avconv", "ffmpeg"]:
-        retcode = os.system('which %s &> /dev/null' % util)
+        retcode = os.system("which %s &> /dev/null" % util)
         if retcode == 0:
             return util
     raise SystemExit("ffmpeg/avconv not installed")
 
 
-LOGFILE = '/dev/null'
-SUPPORTED_FORMATS = {'mp3', 'wma', 'wav', 'ogg', 'flac', 'm4a', 'mpc', 'wv', 'avi'}
+LOGFILE = "/dev/null"
+SUPPORTED_FORMATS = {"mp3", "wma", "wav", "ogg", "flac", "m4a", "mpc", "wv", "avi"}
 EXTERNAL_FORMATS = {"mpc", "wv"}
 INTERNAL_FORMATS = SUPPORTED_FORMATS - EXTERNAL_FORMATS
 EXTERNAL_ENCODERS = {
@@ -22,16 +22,16 @@ EXTERNAL_ENCODERS = {
     "flac": "flac",
 }
 EXTERNAL_ENCODER_OUTPUT_OPT = {
-    'mppenc': '',
-    'lame': '',
-    'faac': '-o',
-    'flac': '-o',
-    'oggenc': '-o',
-    'wavpack': '-o',
+    "mppenc": "",
+    "lame": "",
+    "faac": "-o",
+    "flac": "-o",
+    "oggenc": "-o",
+    "wavpack": "-o",
 }
 FFMPEG_AVCONV = determine_ffmpeg_utility()
 DEPENDENCIES = {
-    'cdparanoia': [],
+    "cdparanoia": [],
     FFMPEG_AVCONV: list(SUPPORTED_FORMATS),
 }
 for audio_format, encoder in EXTERNAL_ENCODERS.items():

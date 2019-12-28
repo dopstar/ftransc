@@ -1,3 +1,5 @@
+ftransc 7.0.0 ():
+    + dropped python 2 support. only supporting python 3.6 and higher
 ftransc 6.0.9 (07 April 2017):
     + Performance improvements when transcoding files from youtube playlists
 ftransc 6.0.6 (05 Apr 2017):
