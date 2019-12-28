@@ -2,7 +2,7 @@
 ![Python Version](https://img.shields.io/pypi/pyversions/ftransc.svg)](https://pypi.python.org/pypi/ftransc) 
 [![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
 [![Downloads](https://img.shields.io/pypi/dm/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
-
+[![Licence](https://img.shields.io/github/license/dopstar/ftransc.svg)](https://raw.githubusercontent.com/dopstar/ftransc/master/LICENSE.txt)
 # What is ftransc
 
 `ftransc` is the python audio conversion library. It can convert local files or files from youtube (even youtube playlists).
