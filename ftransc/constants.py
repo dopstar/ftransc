@@ -1,10 +1,9 @@
-import os
+import shutil
 
 
 def determine_ffmpeg_utility():
     for util in ["avconv", "ffmpeg"]:
-        retcode = os.system("which %s &> /dev/null" % util)
-        if retcode == 0:
+        if shutil.which(util) is not None:
             return util
     raise SystemExit("ffmpeg/avconv not installed")
 
