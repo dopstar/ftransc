@@ -1,3 +1,5 @@
+ftransc 7.0.2 (30 Dec 2020):
+    + added --force-root option to force running as root
 ftransc 7.0.0 ():
     + dropped python 2 support. only supporting python 3.6 and higher
 ftransc 6.0.9 (07 April 2017):

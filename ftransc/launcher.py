@@ -21,8 +21,11 @@ def cli():
     log_format = "[%(levelname)s] %(message)s"
     logging.basicConfig(stream=sys.stdout, level=log_level, format=log_format)
 
-    if "USER" in os.environ and os.environ["USER"] == "root":
-        raise SystemExit("It is not safe to run ftransc as root.")
+    if "USER" in os.environ and os.environ["USER"] == "root" and not opt.force_root:
+        raise SystemExit(
+            "It is not safe to run ftransc as root. "
+            "use '--force-root' if you know what you are doing"
+        )
 
     if not files and not opt.walk and not opt.cdrip:
         raise SystemExit("ftransc: no input file")

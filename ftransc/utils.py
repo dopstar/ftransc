@@ -127,6 +127,12 @@ def parse_args(version=ftransc.__version__):
     parser.add_option(
         "-s", "--silent", action="store_true", help="Be very less verbose."
     )
+    parser.add_option(
+        "--force-root",
+        action="store_true",
+        dest="force_root",
+        help="Take the risk and enable running ftransc as root user"
+    )
     return parser.parse_args()
 
 

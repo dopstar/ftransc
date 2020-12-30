@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "7.0.1"
+version = "7.0.2"
 
 requirements = [
     "pafy",
@@ -48,6 +48,7 @@ setup_args = {
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     "entry_points": {"console_scripts": ["ftransc=ftransc.launcher:cli"]},
 }
