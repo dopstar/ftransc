@@ -39,10 +39,10 @@ def cli():
     )
 
     if opt.walk is not None:
-        for working_directory, _, files in os.walk(opt.walk):
+        working_directory, files = ".", []
+        for w, _, f in os.walk(opt.walk):
+            working_directory, files = w, f
             break
-        else:
-            worker_directory, files = ".", []
         os.chdir(working_directory)
 
     if opt.cdrip:
