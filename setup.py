@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "7.0.2"
+version = "7.0.3"
 
 requirements = [
     "pafy",

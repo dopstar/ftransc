@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/dopstar/ftransc.svg?branch=master)](https://travis-ci.org/dopstar/ftransc) [
-![Python Version](https://img.shields.io/pypi/pyversions/ftransc.svg)](https://pypi.python.org/pypi/ftransc) 
+[![Build Status](https://github.com/dopstar/ftransc/workflows/build/badge.svg?branch=master)](https://github.com/dopstar/ftransc/actions?query=workflow%3Abuild)
+[![Python Version](https://img.shields.io/pypi/pyversions/ftransc.svg)](https://pypi.python.org/pypi/ftransc) 
 [![PyPI Status](https://img.shields.io/pypi/v/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
 [![Downloads](https://img.shields.io/pypi/dm/ftransc.svg)](https://pypi.python.org/pypi/ftransc)
 [![Licence](https://img.shields.io/github/license/dopstar/ftransc.svg)](https://raw.githubusercontent.com/dopstar/ftransc/master/LICENSE.txt)
